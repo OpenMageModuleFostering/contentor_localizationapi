@@ -59,7 +59,9 @@
 				// Get and print log for this product
 				$resource = Mage::getSingleton('core/resource');
 				$readConnection = $resource->getConnection('core_read');
-				$query = "SELECT `contentor_status`.`status_time`, `contentor_status`.`status` FROM `contentor_products` LEFT JOIN `contentor_status` ON `contentor_products`.`contentor_id`= `contentor_status`.`contentor_id` WHERE `contentor_products`.`sku` = '" . $this_sku . "' ORDER BY `contentor_status`.`status_time`";
+				$statustable = Mage::getConfig()->getTablePrefix()."contentor_status";
+				$producttable = Mage::getConfig()->getTablePrefix()."contentor_products";
+				$query = "SELECT `" . $statustable . "`.`status_time`, `" . $statustable . "`.`status` FROM `" . $producttable . "` LEFT JOIN `" . $statustable . "` ON `" . $producttable . "`.`contentor_id`= `" . $statustable . "`.`contentor_id` WHERE `" . $producttable . "`.`sku` = '" . $this_sku . "' ORDER BY `" . $statustable . "`.`status_time`";
 				$messages = $readConnection->fetchAll($query);
 				foreach($messages as $message) {
 					if(substr($message['status'], 0, 8) == 'Received') {

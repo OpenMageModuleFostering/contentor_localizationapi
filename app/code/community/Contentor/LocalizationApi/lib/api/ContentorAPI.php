@@ -9,8 +9,9 @@ class ContentorAPI
 			if($result) {
 				$resource = Mage::getSingleton('core/resource') or die('No recource');
 				
-				$writeConnection = $resource->getConnection('core_write') or die('No connection');;
-				$query = "INSERT INTO contentor_products
+				$writeConnection = $resource->getConnection('core_write') or die('No connection');
+				$table = Mage::getConfig()->getTablePrefix()."contentor_products";
+				$query = "INSERT INTO " . $table . "
 						  (contentor_id, sku, source_locale, target_locale, target_store)
 						  VALUES
 						  ('" . $result . "',
@@ -22,7 +23,8 @@ class ContentorAPI
 				if(!$writeConnection->query($query)) {
 					Mage::throwException(Mage::helper('adminhtml')->__('Error: Writing product to DB'));
 				} else {
-					$query = "INSERT INTO contentor_status
+					$table = Mage::getConfig()->getTablePrefix()."contentor_status";
+					$query = "INSERT INTO " . $table . "
 								(contentor_id, status)
 								VALUES
 								('" . $result . "',
@@ -99,7 +101,8 @@ class ContentorAPI
 		// Get sku and target store from Magento DB
 		$resource = Mage::getSingleton('core/resource');
 		$readConnection = $resource->getConnection('core_read');
-		$query = "SELECT sku, target_store FROM `contentor_products` WHERE `contentor_id` = '" . $object->id . "' AND completed_time IS NULL";
+		$table = Mage::getConfig()->getTablePrefix()."contentor_products";
+		$query = "SELECT sku, target_store FROM `" . $table . "` WHERE `contentor_id` = '" . $object->id . "' AND completed_time IS NULL";
 		if($productInfo = $readConnection->fetchRow($query)) {
 			
 			$product = Mage::getModel('catalog/product')->loadByAttribute('sku',$productInfo['sku']);
@@ -121,20 +124,42 @@ class ContentorAPI
 				$product->save();
 				// Write notice in Magento DB, set completed date in DB
 				$resource = Mage::getSingleton('core/resource') or die('No recource');
-				$writeConnection = $resource->getConnection('core_write') or die('No connection');;
-				$query = "UPDATE contentor_products SET `completed_time` = '" . $object->completed ."' WHERE `contentor_id` = '" . $object->id . "'";
+				$writeConnection = $resource->getConnection('core_write') or die('No connection');
+				$table = Mage::getConfig()->getTablePrefix()."contentor_products";
+				$query = "UPDATE " . $table . " SET `completed_time` = '" . $object->completed ."' WHERE `contentor_id` = '" . $object->id . "'";
 				if(!$writeConnection->query($query)) {
 					// Set notice that something didn't work!
 					return false;
 				}
 				$resource = Mage::getSingleton('core/resource') or die('No recource');
 				$writeConnection = $resource->getConnection('core_write') or die('No connection');;
-				$query = "INSERT INTO contentor_status (`contentor_id`, `status`) VALUES ('" . $object->id . "', 'Received as completed, completion time: " . $object->completed . "')";
+				$table = Mage::getConfig()->getTablePrefix()."contentor_status";
+				$query = "INSERT INTO " . $table . " (`contentor_id`, `status`) VALUES ('" . $object->id . "', 'Received as completed, completion time: " . $object->completed . "')";
 				$writeConnection->query($query);
 			}
 		} else {
 			return true;
 		}
+	}
+	
+	public function testAuth() {
+		$url = ContentorAPI::getURL(true);
+		$token = ContentorAPI::getToken();
+		
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, $url);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json', 'Authorization: Bearer '.$token, 'Accept: application/json'));
+		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'GET');
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		$response = curl_exec($ch);
+		curl_close($ch);
+		$info = json_decode($response);
+		if(isset($info->companyName)) {
+			print $info->companyName;
+		} else {
+			print 'Unauthorized'; 
+		}
+		
 	}
 	
 	protected function getCurl($token, $url) {
@@ -148,11 +173,28 @@ class ContentorAPI
 		return $response;
 	}
 	
-	protected function getURL() {
-		return 'http://api.dev.contentor.com:8080/v1/content';
+	protected function getURL($auth=false) {
+		$dev = ContentorAPI::getDEV();
+		if($dev) {
+			if($auth) {
+				return 'http://api.dev.contentor.com:8080/v1/auth';
+			} else {
+				return 'http://api.dev.contentor.com:8080/v1/content';
+			}
+		} else {
+			if($auth) {
+				return 'https://api.contentor.com/v1/auth';
+			} else {
+				return 'https://api.contentor.com/v1/content';
+			}
+		}
 	}
 	
 	protected function getToken() {
 		return Mage::getStoreConfig('contentor_options/contentor_token/contentor_token_input');
+	}
+	
+	private function getDEV() {
+		return false;
 	}
 }

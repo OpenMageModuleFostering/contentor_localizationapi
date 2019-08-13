@@ -2,15 +2,16 @@
 <config> 
     <modules>
         <Contentor_LocalizationApi>
-            <version>1.0.0</version>
+            <version>1.1.0</version>
         </Contentor_LocalizationApi>
     </modules>
 
 	<global>
 		<blocks>
-			<LocalizationApi>
+			<Contentor_LocalizationApi>
 				<class>Contentor_LocalizationApi_Block</class>
-			</LocalizationApi>
+			</Contentor_LocalizationApi>
+			
 			<adminhtml>
 				<rewrite>
 					<catalog_product_edit_tabs>Contentor_LocalizationApi_Block_Adminhtml_Tabs</catalog_product_edit_tabs>

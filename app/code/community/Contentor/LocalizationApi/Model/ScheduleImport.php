@@ -8,7 +8,8 @@ class Contentor_LocalizationApi_Model_ScheduleImport
 		// Get newest completion in system
 		$resource = Mage::getSingleton('core/resource');
 		$readConnection = $resource->getConnection('core_read');
-		$query = "SELECT MAX(`completed_time`) FROM `contentor_products`";
+		$table = Mage::getConfig()->getTablePrefix()."contentor_products";
+		$query = "SELECT MAX(`completed_time`) FROM `" . $table . "`";
 		$newest = $readConnection->fetchOne($query);
 		
 		// Fix the date the ugly way!

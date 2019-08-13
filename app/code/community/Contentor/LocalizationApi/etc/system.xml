@@ -36,6 +36,17 @@
 						<show_in_website>0</show_in_website>
 						<show_in_store>0</show_in_store>
 					</contentor_token_input>
+					
+					<contentor_token_check translate="label">
+						<label>Check Token: </label>
+						<comment>Save Config with Token before check</comment>
+                		<frontend_type>button</frontend_type>
+                		<frontend_model>Contentor_LocalizationApi/adminhtml_button</frontend_model>
+                		<sort_order>20</sort_order>
+                		<show_in_default>1</show_in_default>
+                		<show_in_website>0</show_in_website>
+                		<show_in_store>0</show_in_store>
+            		</contentor_token_check>
 				</fields>
 			</contentor_token>
 			

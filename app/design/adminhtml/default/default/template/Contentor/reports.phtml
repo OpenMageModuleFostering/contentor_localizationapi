@@ -23,10 +23,11 @@
 	
 	$resource = Mage::getSingleton('core/resource');
 	$readConnection = $resource->getConnection('core_read');
+	$table = Mage::getConfig()->getTablePrefix()."contentor_products";
 	$query = "SELECT `sku`, 
 					GROUP_CONCAT(`target_store`, ';', `sent_time`) AS sent, 
 					GROUP_CONCAT(`target_store`, ';', `completed_time`) AS completed 
-				FROM `contentor_products` 
+				FROM `" . $table . "` 
 				GROUP BY `sku` 
 				ORDER BY `sent_time` DESC
 				LIMIT " . $offset . "," . $pagesize;
