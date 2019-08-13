@@ -39,7 +39,7 @@ class Contentor_LocalizationApi_Block_Adminhtml_CategoryFieldDetails
         // Make custom options for attributes
         $attributes = Mage::getResourceModel('catalog/category_attribute_collection');
         foreach($attributes as $attribute) {
-			if(!empty($attribute->getData('frontend_label'))) {
+			if($attribute->getData('frontend_label') != '') {
         		$this->attributeList[$attribute->getdata('attribute_code')] = $attribute->getData('frontend_label') . ' (' . $attribute->getFrontendInput() . ')';
 			}
         }
@@ -60,7 +60,7 @@ class Contentor_LocalizationApi_Block_Adminhtml_CategoryFieldDetails
     
     protected function _renderCellTemplate($columnName)
     {
-    	if (empty($this->_columns[$columnName])) {
+    	if ($this->_columns[$columnName] == '') {
     		throw new Exception('Wrong column name specified.');
     	}
     	$column = $this->_columns[$columnName];

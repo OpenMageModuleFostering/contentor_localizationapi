@@ -58,7 +58,7 @@ class Contentor_LocalizationApi_Block_Adminhtml_FieldDetails
     
     protected function _renderCellTemplate($columnName)
     {
-    	if (empty($this->_columns[$columnName])) {
+    	if ($this->_columns[$columnName] == '') {
     		throw new Exception('Wrong column name specified.');
     	}
     	$column = $this->_columns[$columnName];

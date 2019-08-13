@@ -30,7 +30,7 @@ class ContentorAPI
 				}
 				$id = $field['attribute'] . '_' . sprintf("%03d", $n[$field['attribute']]);
 			
-				if(!empty($value)) {
+				if($value != '') {
 					$fields[] = array('id'=>$id,
 							'name'=>$name,
 							'type'=>$field['type'],
@@ -72,7 +72,7 @@ class ContentorAPI
 				}
 				$id = $field['attribute'] . '_' . sprintf("%03d", $n[$field['attribute']]);
 					
-				if(!empty($value)) {
+				if($value != '') {
 					$fields[] = array('id'=>$id,
 							'name'=>$name,
 							'type'=>$field['type'],
