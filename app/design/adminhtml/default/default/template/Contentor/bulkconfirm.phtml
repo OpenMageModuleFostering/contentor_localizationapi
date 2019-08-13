@@ -8,11 +8,12 @@ $url = Mage::helper('adminhtml')->getUrl('adminhtml/Contentor/postbulk')
 <script type="text/javascript">
     //<![CDATA[
     function doSend(formular) {
-        console.log('1');
     	if(!document.getElementsByName("theend").value) {
 			const products = formular.products.value;
 			const source = formular.source.value;
 			const total = formular.total.value;
+			const contextvalue = formular.contextvalue.value;
+			const contextname = formular.contextname.value;
 			let targets;
 			if(formular.targets.type == 'select-multiple') {
 				targets = new Array;
@@ -27,7 +28,7 @@ $url = Mage::helper('adminhtml')->getUrl('adminhtml/Contentor/postbulk')
 			}
 			new Ajax.Request('<?php echo $url ?>', {
 	            method:     'POST',
-	            parameters:	{ products: products, source: source, targets: targets, total: total },
+	            parameters:	{ products: products, source: source, targets: targets, total: total, contextvalue: contextvalue, contextname: contextname },
 	            onSuccess:  function(transport) {
 		            if(transport.responseText) {
 		                document.getElementById('resultdiv').innerHTML = transport.responseText;
@@ -128,9 +129,42 @@ $url = Mage::helper('adminhtml')->getUrl('adminhtml/Contentor/postbulk')
 			print "</select>";
 			?>
 		</p>
-		
+		<br>
+		<p>
+		<?php 
+		$contextName = Mage::getStoreConfig('contentor_context/contentor_context_data/contentor_context_products_contextname');
+		$contextValue = Mage::getStoreConfig('contentor_context/contentor_context_data/contentor_context_products_context');
+		if(!empty($contextValue)) {
+			$collapsed = 1;
+		} else {
+			$collapsed = 0;
+		}
+		?>
+			<div class="entry-edit">
+				<div class="section-config">
+					<div class="entry-edit-head collapseable">
+						<a href="#" id="context-head" onclick="Fieldset.toggleCollapse('context', '<?php print Mage::helper('core/url')->getCurrentUrl(); ?>'); return false;">Add extra content context</a>
+					</div>
+					<input id="context-state" name="config_state_context" type="hidden" value="<?php print $collapsed; ?>">
+					<fieldset class="config collapseable" id="context">
+						<b>Context name</b><br>
+						<input type="text" name="contextname" value="<?php print $contextName; ?>"><br><br>
+						<b>Context</b><br>
+						<textarea name="contextvalue" style="width:100%" rows=7 id="context-content"><?php 
+						print $contextValue;
+						?></textarea><br>
+						<i>Context from this field will be visible for the writers.</i>
+					</fieldset>
+					<script type="text/javascript">
+						//<![CDATA[
+	        				Fieldset.applyCollapse('context');
+	        			//]]>
+            		</script>
+				</div>
+			</div>
+		</p>
+		<br>
 		</form>
-
 		<div id="resultdiv"></div>
 		</fieldset>
 	</div>	

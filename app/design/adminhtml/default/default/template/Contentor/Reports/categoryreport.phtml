@@ -56,13 +56,13 @@
 	$query = "SELECT `cat_id`, 
 					GROUP_CONCAT(`target_store`, ';', `sent_time`) AS sent, 
 					GROUP_CONCAT(`target_store`, ';', `completed_time`) AS completed,
-					`source_locale` AS source
+					`source_locale` AS source,  GROUP_CONCAT(`target_store`, ';', `state`) as state
 				FROM `" . $table . "` 
 				GROUP BY `cat_id`, `source_locale`  
 				ORDER BY `sent_time` DESC
 				LIMIT " . $offset . "," . $pagesize;
 	$categoryList = $readConnection->fetchAll($query);
-	$n = count($productList);
+	$n = count($categoryList);
 		
 	// Get stores
 	$stores = Mage::app()->getStores();
@@ -128,23 +128,48 @@
 			}
 		}
 		
+		$state = array();
+		$stateStores = explode(",", $cat['state']);
+		foreach($stateStores as $stateStore) {
+			if(!empty($stateStore)) {
+				$stateinfo = explode(";",$stateStore);
+				$state[$stateinfo[0]] = $stateinfo[1];
+			}
+		}
+		
 		print '<tr title="' . $url . '" class="' . $even . '">';
 		print '<td class=" "><a href="' . $url . '">' . $cat['cat_id'] . '</a></td>';
 		print '<td class=" ">' . $catName . '</td>';
 		print '<td class=" ">' . $cat['source'] . '</td>';
 		// Loop stores and print status for them
 		foreach($storeInfo as $id => $name) {
-			if(isset($completed[$id])) {
-				print '<td style="padding-left: 25px !important; background:#eff5ea url(/skin/adminhtml/default/default/images/success_msg_icon.gif) no-repeat 3px 3px !important;">';
-				print 'Received: ' . $completed[$id];
-			} elseif(isset($sent[$id]))	{
-				print '<td style="padding-left: 25px !important; background:#fffbf0 url(/skin/adminhtml/default/default/images/note_msg_icon.gif) no-repeat 3px 3px !important;">';
-				print 'Sent: ' . $sent[$id];
+			if(isset($state[$id])) {
+				// I have a state and I will use it!
+				if($state[$id] == 'completed') {
+					print '<td style="padding-left: 25px !important; background:#eff5ea url(/skin/adminhtml/default/default/images/success_msg_icon.gif) no-repeat 3px 3px !important;">';
+					print 'Received: ' . $completed[$id];
+				} else if($state[$id] == 'confirmed') {
+					print '<td style="padding-left: 25px !important; background:#fffbf0 url(/skin/adminhtml/default/default/images/note_msg_icon.gif) no-repeat 3px 3px !important;">';
+					print 'Confirmed ('  . $sent[$id] . ')';
+				} else if($state[$id] == 'pending') {
+					print '<td style="padding-left: 25px !important; background:#fffbf0 url(/skin/adminhtml/default/default/images/note_msg_icon.gif) no-repeat 3px 3px !important;">';
+					print 'Sent: ' . $sent[$id];
+				} else if($state[$id] == 'canceled') {
+					print '<td style="padding-left: 25px !important; background:#faebe7 url(/skin/adminhtml/default/default/images/error_msg_icon.gif) no-repeat 3px 3px !important;">';
+					print 'Canceled';
+				}
 			} else {
-				print '<td>';
-				print 'Not sent';
+				if(isset($completed[$id])) {
+					print '<td style="padding-left: 25px !important; background:#eff5ea url(/skin/adminhtml/default/default/images/success_msg_icon.gif) no-repeat 3px 3px !important;">';
+					print 'Received: ' . $completed[$id];
+				} elseif(isset($sent[$id]))	{
+					print '<td style="padding-left: 25px !important; background:#fffbf0 url(/skin/adminhtml/default/default/images/note_msg_icon.gif) no-repeat 3px 3px !important;">';
+					print 'Sent: ' . $sent[$id];
+				} else {
+					print '<td>';
+					print 'Not sent';
+				}
 			}
-			
 			print '</td>';
 		}
 		print '</tr>';

@@ -6,12 +6,12 @@
             <sort_order>99999999</sort_order>
         </contentorconfig>
     </tabs>
-    <sections>
     
+   <sections>
 	<contentor_options translate="label" module="Contentor_LocalizationApi">
 		<label>Contentor API Config Options</label>
 		<tab>contentorconfig</tab>
-		<sort_order>1000</sort_order>
+		<sort_order>10</sort_order>
 		<show_in_default>1</show_in_default>
 		<show_in_website>0</show_in_website>
 		<show_in_store>0</show_in_store>
@@ -24,22 +24,23 @@
 				<show_in_default>1</show_in_default>
 				<show_in_website>0</show_in_website>
 				<show_in_store>0</show_in_store>
-				<comment><![CDATA[Token can be found in Contentor Customer Portal: <a href="https://portal.contentor.com/" target="_blank">https://portal.contentor.com/</a>]]></comment>
+				<comment><![CDATA[Read more about this extension at our developer site: <a href="http://developer.contentor.com/integrations/magento.html" target="_blank">http://developer.contentor.com/integrations/magento.html</a>]]></comment>
 
 				<fields>
 					<contentor_token_input>
 						<label>Contentor Token: </label>
 						<comment>Your token from the Customer portal.</comment>
 						<frontend_type>text</frontend_type>
+						<backend_model>Contentor_LocalizationApi/validation_token</backend_model>
 						<sort_order>10</sort_order>
 						<show_in_default>1</show_in_default>
 						<show_in_website>0</show_in_website>
 						<show_in_store>0</show_in_store>
 					</contentor_token_input>
-					
+				
 					<contentor_token_check translate="label">
 						<label>Check Token: </label>
-						<comment>Save Config with Token before check.</comment>
+						<comment>Verify token before save, invalid token will not be saved.</comment>
                 		<frontend_type>button</frontend_type>
                 		<frontend_model>Contentor_LocalizationApi/adminhtml_button</frontend_model>
                 		<sort_order>20</sort_order>
@@ -80,6 +81,17 @@
 						<show_in_website>0</show_in_website>
 						<show_in_store>0</show_in_store>
 					</contentor_autoexport>
+					
+					<contentor_autourlgenerate>
+						<label>Generate url key: </label>
+						<comment>Enable to automatically generate URL key based on name when received localized name attribute. NOTE: make sure your URL Key attribute are not set to global before using this feature.</comment>
+						<frontend_type>select</frontend_type>
+						<sort_order>30</sort_order>
+						<source_model>adminhtml/system_config_source_enabledisable</source_model>
+						<show_in_default>1</show_in_default>
+						<show_in_website>0</show_in_website>
+						<show_in_store>0</show_in_store>
+					</contentor_autourlgenerate>
 				</fields>
 			</contentor_automation>
 
@@ -139,7 +151,7 @@
 					<contentor_fields_input translate="label">
   						<label>Included fields for product localization:</label>
 						<comment>Note than only attribute types text or textarea are valid as localizable fields. Also the fields will appeare in this order for the writer.</comment>
-    					<frontend_model>Contentor_LocalizationApi/adminhtml_fieldDetails</frontend_model>
+    					<frontend_model>Contentor_LocalizationApi/adminhtml_productFieldDetails</frontend_model>
     					<backend_model>Contentor_LocalizationApi/validation_fields</backend_model>
     					<sort_order>8</sort_order>
     					<show_in_default>1</show_in_default>
@@ -157,10 +169,198 @@
     					<show_in_website>0</show_in_website>
     					<show_in_store>0</show_in_store>
 					</contentor_category_fields_input>
+					
+					<contentor_cmspage_fields_input translate="label">
+  						<label>Included fields for CMS page localization:</label>
+						<comment>Note than only attribute types text or textarea are valid as localizable fields. Also the fields will appeare in this order for the writer.</comment>
+    					<frontend_model>Contentor_LocalizationApi/adminhtml_cmspageFieldDetails</frontend_model>
+    					<backend_model>Contentor_LocalizationApi/validation_cmspagefields</backend_model>
+    					<sort_order>24</sort_order>
+    					<show_in_default>1</show_in_default>
+    					<show_in_website>0</show_in_website>
+    					<show_in_store>0</show_in_store>
+					</contentor_cmspage_fields_input>
 				</fields>
 			</contentor_fields>
 			
 		</groups>			
 	</contentor_options>
+	
+	<contentor_versioning translate="label" module="Contentor_LocalizationApi">
+		<label>Contentor API Versioning</label>
+		<tab>contentorconfig</tab>
+		<sort_order>20</sort_order>
+		<show_in_default>1</show_in_default>
+		<show_in_website>0</show_in_website>
+		<show_in_store>0</show_in_store>
+
+		<groups>
+			<contentor_versioning_activation translate="label" module="Contentor_LocalizationApi">
+				<label>Activate</label>
+				<frontend_type>text</frontend_type>
+				<sort_order>10</sort_order>
+				<show_in_default>1</show_in_default>
+				<show_in_website>0</show_in_website>
+				<show_in_store>0</show_in_store>
+				<comment><![CDATA[If yout contract doesn't include princing for versioning, please contact Contentor at <a href="malto:info@contentor.com">info@contentor.com</a> or your company contact person direct.<br>Read mote about versioning at <a href="http://developer.contentor.com/api/content-requests/versioning.html">http://developer.contentor.com/api/content-requests/versioning.html</a>]]></comment>
+
+				<fields>
+					<contentor_versioning_active>
+						<label>Activate versioning: </label>
+						<comment>Send request as type update when sent before.</comment>
+						<frontend_type>select</frontend_type>
+						<sort_order>10</sort_order>
+						<source_model>adminhtml/system_config_source_enabledisable</source_model>
+						<sort_order>10</sort_order>
+						<show_in_default>1</show_in_default>
+						<show_in_website>0</show_in_website>
+						<show_in_store>0</show_in_store>
+					</contentor_versioning_active>
+				</fields>
+			</contentor_versioning_activation>
+			
+			<contentor_versioning_sections translate="label" module="Contentor_LocalizationApi">
+				<label>Sections</label>
+				<frontend_type>text</frontend_type>
+				<sort_order>20</sort_order>
+				<show_in_default>1</show_in_default>
+				<show_in_website>0</show_in_website>
+				<show_in_store>0</show_in_store>
+
+            	<fields>
+					<contentor_versioning_products>
+            			<label>Activate for products: </label>
+						<comment>Send request as type update on save.</comment>
+						<frontend_type>select</frontend_type>
+						<sort_order>10</sort_order>
+						<source_model>adminhtml/system_config_source_enabledisable</source_model>
+						<show_in_default>1</show_in_default>
+						<show_in_website>0</show_in_website>
+						<show_in_store>0</show_in_store>
+					</contentor_versioning_products>
+
+					<contentor_versioning_categories>
+            			<label>Activate for categories: </label>
+						<comment>Send request as type update on save.</comment>
+						<frontend_type>select</frontend_type>
+						<sort_order>20</sort_order>
+						<source_model>adminhtml/system_config_source_enabledisable</source_model>
+						<show_in_default>1</show_in_default>
+						<show_in_website>0</show_in_website>
+						<show_in_store>0</show_in_store>
+					</contentor_versioning_categories>
+					
+					<contentor_versioning_cmspages>
+            			<label>Activate for CMS pages: </label>
+						<comment>Send request as type update on save.</comment>
+						<frontend_type>select</frontend_type>
+						<sort_order>30</sort_order>
+						<source_model>adminhtml/system_config_source_enabledisable</source_model>
+						<show_in_default>1</show_in_default>
+						<show_in_website>0</show_in_website>
+						<show_in_store>0</show_in_store>
+					</contentor_versioning_cmspages>
+				</fields>	
+			</contentor_versioning_sections>
+		</groups>	
+	</contentor_versioning>
+	
+	
+	<contentor_context translate="label" module="Contentor_LocalizationApi">
+		<label>Contentor API Context and Hints</label>
+		<tab>contentorconfig</tab>
+		<sort_order>30</sort_order>
+		<show_in_default>1</show_in_default>
+		<show_in_website>0</show_in_website>
+		<show_in_store>0</show_in_store>
+
+		<groups>
+			<contentor_context_data translate="label" module="Contentor_LocalizationApi">
+				<label>Context</label>
+				<frontend_type>text</frontend_type>
+				<sort_order>10</sort_order>
+				<show_in_default>1</show_in_default>
+				<show_in_website>0</show_in_website>
+				<show_in_store>0</show_in_store>
+
+       			<fields>
+       				<contentor_context_products_contextname>
+       					<label>Product context name: </label>
+						<comment></comment>
+						<frontend_type>text</frontend_type>
+						<sort_order>10</sort_order>
+						<show_in_default>1</show_in_default>
+						<show_in_website>0</show_in_website>
+						<show_in_store>0</show_in_store>
+					</contentor_context_products_contextname>
+					
+					<contentor_context_products_context>
+       					<label>Product context value: </label>
+						<comment>If you want to add freetext context to all product requests, add default value here. This can be edited before send.</comment>
+						<frontend_type>textarea</frontend_type>
+						<sort_order>20</sort_order>
+						<show_in_default>1</show_in_default>
+						<show_in_website>0</show_in_website>
+						<show_in_store>0</show_in_store>
+					</contentor_context_products_context>
+
+					<contentor_context_categories_contextname>
+       					<label>Category context name: </label>
+						<comment></comment>
+						<frontend_type>text</frontend_type>
+						<sort_order>30</sort_order>
+						<show_in_default>1</show_in_default>
+						<show_in_website>0</show_in_website>
+						<show_in_store>0</show_in_store>
+					</contentor_context_categories_contextname>
+
+					<contentor_context_categories_context>
+       					<label>Category context value: </label>
+						<comment>If you want to add freetext context to all category requests, add default value here. This can be edited before send.</comment>
+						<frontend_type>textarea</frontend_type>
+						<sort_order>40</sort_order>
+						<show_in_default>1</show_in_default>
+						<show_in_website>0</show_in_website>
+						<show_in_store>0</show_in_store>
+					</contentor_context_categories_context>
+
+					<contentor_context_cmspages_contextname>
+       					<label>CMS Page context name: </label>
+						<comment></comment>
+						<frontend_type>text</frontend_type>
+						<sort_order>50</sort_order>
+						<show_in_default>1</show_in_default>
+						<show_in_website>0</show_in_website>
+						<show_in_store>0</show_in_store>
+					</contentor_context_cmspages_contextname>
+					
+					<contentor_context_cmspages_context>
+       					<label>CMS Page context value: </label>
+						<comment>If you want to add freetext context to all CMS page requests, add default value here. This can be edited before send.</comment>
+						<frontend_type>textarea</frontend_type>
+						<sort_order>60</sort_order>
+						<show_in_default>1</show_in_default>
+						<show_in_website>0</show_in_website>
+						<show_in_store>0</show_in_store>
+					</contentor_context_cmspages_context>
+				</fields>
+				
+			</contentor_context_data>
+			
+			<contentor_context_hints translate="label" module="Contentor_LocalizationApi">
+				<label>Hints</label>
+				<frontend_type>text</frontend_type>
+				<sort_order>20</sort_order>
+				<show_in_default>1</show_in_default>
+				<show_in_website>0</show_in_website>
+				<show_in_store>0</show_in_store>
+
+       			<fields>
+
+				</fields>
+			</contentor_context_hints>
+		</groups>
+	</contentor_context>
+	
 </sections>
 </config>

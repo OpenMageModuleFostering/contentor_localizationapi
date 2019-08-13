@@ -7,11 +7,14 @@
     </table>
 </div>
 <div class="grid">
-<?php 
-$produrl = Mage::helper('adminhtml')->getUrl('adminhtml/contentor/productsreport');
-$caturl = Mage::helper('adminhtml')->getUrl('adminhtml/contentor/categoriesreport');
-?>
-<a href="<?php print $produrl; ?>">Products</a><br>
-<a href="<?php print $caturl; ?>">Categories</a>
-
+	<?php 
+	$produrl = Mage::helper('adminhtml')->getUrl('adminhtml/contentor/productsreport');
+	$caturl = Mage::helper('adminhtml')->getUrl('adminhtml/contentor/categoriesreport');
+	$cmspageurl = Mage::helper('adminhtml')->getUrl('adminhtml/contentor/cmspagesreport');
+	?>
+	<ul>
+		<li><a href="<?php print $produrl; ?>">Products</a></li>
+		<li><a href="<?php print $caturl; ?>">Categories</a></li>
+		<li><a href="<?php print $cmspageurl; ?>">CMS Pages</a></li>
+	</ul>
 </div>

@@ -8,4 +8,13 @@
 			</action>
 		</reference>
 	</adminhtml_catalog_product_edit>
+	
+	<adminhtml_cms_page_edit>
+        <reference name="cms_page_edit_tabs">
+            <action method="addTab">
+				<name>Contentor Localization</name>
+				<block template="Contentor/Cms/pagelocalizationtab.phtml">Contentor_LocalizationApi/adminhtml_tabs_cms_pagelocalizationtab</block>
+            </action>
+        </reference>
+    </adminhtml_cms_page_edit>
 </layout>

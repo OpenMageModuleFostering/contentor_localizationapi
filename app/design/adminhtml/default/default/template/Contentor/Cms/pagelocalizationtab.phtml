@@ -1,14 +1,17 @@
 <div class="entry-edit">
 	<div class="entry-edit-head">
-	    <h4 class="icon-head head-edit-form fieldset-legend">Contentor Localization</h4>
-	    <div class="form-buttons"></div>
+		<h4 class="icon-head head-edit-form fieldset-legend">Contentor Localization API</h4>
 	</div>
-	<div class="fieldset fieldset-wide" id="group_4fieldset_group_4">
-	    <div class="hor-scroll">
-	    	<p>
+    <fieldset id="Contentor">
+		<p>
 			<h3>Localization</h3>
 			<label><input type="checkbox" name="translate" value="true"> Send on save</label>
 		</p>
+		<br>
+		<p>
+		When localization are completed and received, a new CMS Page will be created based on this.<br>Attributes sent and localized will be replaced, other settings will be the same.
+		</p>
+		<br>
 		<p>
 			<h3>Source store locale</h3>
 			<?php
@@ -18,7 +21,8 @@
 			if(!$defaultSource) {
 				$defaultSource = Mage::getStoreConfig('general/locale/code', $thisStoreId);
 			}
-			//$this_sku  = Mage::registry('current_product')->getSku();
+			// This cms page!
+			$currentPageIdentifyer = Mage::getSingleton('cms/page')->getIdentifier();
 			// Get, and list all available locales
 			$allLanguages = Mage::app()->getLocale()->getOptionLocales();
 			?>
@@ -37,7 +41,7 @@
 			<br>
 			
 		</p>
-		
+		<br>
 		<p>
 			<h3>Target store view(s)</h3>
 			<?php
@@ -81,8 +85,10 @@
 					<fieldset class="config collapseable" id="data_to_send">
 							<!--  Get my fields and print them nicely! -->
 							<?php
+							$currentPage = Mage::registry('cms_page');
+							$pageId = $currentPage->getId(); 
 							require_once(Mage::getModuleDir('', 'Contentor_LocalizationApi') . '/lib/api/ContentorAPI.php');
-							$fields = ContentorAPI::getFieldData(Mage::registry('current_category'), 'category');
+							$fields = ContentorAPI::getFieldData($currentPage, 'cmspage');
 							foreach($fields as $field) {
 								if($field['id'] != 'auto_id') {
 									print '<p><b>' . $field['name'] . '</b> ';
@@ -100,10 +106,10 @@
 				</div>
 			</div>
 		</p>
-				<p>
+		<p>
 		<?php 
-		$contextName = Mage::getStoreConfig('contentor_context/contentor_context_data/contentor_context_categories_contextname');
-		$contextValue = Mage::getStoreConfig('contentor_context/contentor_context_data/contentor_context_categories_context');
+		$contextName = Mage::getStoreConfig('contentor_context/contentor_context_data/contentor_context_cmspages_contextname');
+		$contextValue = Mage::getStoreConfig('contentor_context/contentor_context_data/contentor_context_cmspages_context');
 		if(!empty($contextValue)) {
 			$collapsed = 1;
 		} else {
@@ -136,17 +142,17 @@
 		<br>
 		<p>
 			<h3>Request status</h3>
-			<?php 
+			<?php
 			// Get and print log for this product
-			$catID = Mage::registry('current_category')->getId();
 			$resource = Mage::getSingleton('core/resource');
 			$readConnection = $resource->getConnection('core_read');
 			$statustable = Mage::getConfig()->getTablePrefix()."contentor_status";
-			$categorytable = Mage::getConfig()->getTablePrefix()."contentor_categories";
-			$query = "SELECT `" . $categorytable . "`.`contentor_id`, `" . $categorytable . "`.`target_store`, `" . $categorytable . "`.`sent_time`, `" . $categorytable . "`.`completed_time`, `" . $categorytable . "`.`canceled_time`, `" . $statustable . "`.`status_time`, `" . $statustable . "`.`status`, `" . $categorytable . "`.`state`, `" . $categorytable . "`.`type` FROM `" . $categorytable . "` LEFT JOIN `" . $statustable . "` ON `" . $categorytable . "`.`contentor_id`= `" . $statustable . "`.`contentor_id` WHERE `" . $categorytable . "`.`cat_id` = :cat_id ORDER BY `" . $categorytable . "`.`contentor_id` DESC, `" . $statustable . "`.`status_time`";
-			$binds = array('cat_id'=>$catID);
+			$cmspagetable = Mage::getConfig()->getTablePrefix()."contentor_cmspages";
+			$query = "SELECT `" . $cmspagetable . "`.`contentor_id`, `" . $cmspagetable . "`.`target_store`, `" . $cmspagetable . "`.`sent_time`, `" . $cmspagetable . "`.`completed_time`, `" . $cmspagetable . "`.`canceled_time`, `" . $statustable . "`.`status_time`, `" . $statustable . "`.`status`, `" . $cmspagetable . "`.`state`, `" . $cmspagetable . "`.`type` FROM `" . $cmspagetable . "` LEFT JOIN `" . $statustable . "` ON `" . $cmspagetable . "`.`contentor_id`= `" . $statustable . "`.`contentor_id` WHERE `" . $cmspagetable . "`.`page_id` = :this_pageid ORDER BY `" . $cmspagetable . "`.`contentor_id` DESC, `" . $statustable . "`.`status_time`";
+			$binds = array('this_pageid'=>$pageId);
 			$messages = $readConnection->fetchAll($query, $binds);
 			$lastId = '';
+			
 			if(count($messages)) {
 				// I have content
 				print '<ul class="messages">';
@@ -167,7 +173,7 @@
 						} else if($message['state'] == 'confirmed') {
 							print '<li class="notice-msg">';
 							print '<h4 style="float:left">Confirmed</h4>';
-							print '<div class="form-buttons"><button onClick="fetchSingle(\'' . $message['contentor_id'] . '\',\'category\'); return false;">Look for updates</button></div>';
+							print '<div class="form-buttons"><button onClick="fetchSingle(\'' . $message['contentor_id'] . '\',\'cmspage\'); return false;">Look for updates</button></div>';
 							print '<div style="clear:both"></div>';
 							
 						} else if($message['state'] == 'completed' || $message['completed_time'] != null) {
@@ -177,7 +183,7 @@
 						} else {
 							print '<li class="notice-msg">';
 							print '<h4 style="float:left">Sent ' . $message['sent_time'] . '</h4>';
-							print '<div class="form-buttons"><button onClick="fetchSingle(\'' . $message['contentor_id'] . '\',\'category\'); return false;">Look for updates</button></div>';
+							print '<div class="form-buttons"><button onClick="fetchSingle(\'' . $message['contentor_id'] . '\',\'cmspage\'); return false;">Look for updates</button></div>';
 							print '<div style="clear:both"></div>';
 							
 						}
@@ -209,8 +215,7 @@
 			}
 			?>
 		</p>
-	    </div>
-	</div>
+	</fieldset>
 </div>
 <script type="text/javascript">
 //<![CDATA[

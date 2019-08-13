@@ -1,17 +1,20 @@
 <script type="text/javascript">
     //<![CDATA[
     function check() {
+        var token = document.getElementById('contentor_options_contentor_token_contentor_token_input').value;
         new Ajax.Request('<?php echo $this->getAjaxCheckUrl() ?>', {
             method:     'get',
-            onSuccess: function(transport){
-
-            if (transport.responseText){
-                alert('Your token are verified as: ' + transport.responseText)
-            }
+            parameters: { token },
+            onSuccess: function(transport) {
+	            if (transport.responseText) {
+	                alert('Token verified as: ' + transport.responseText);
+	            } else {
+	            	alert('Token invalid!');
+	            }
             }
         });
     }
     //]]>
 </script>
 
-<?php echo $this->getButtonHtml() ?>
+<?php echo $this->getButtonHtml(); ?>

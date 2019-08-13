@@ -7,6 +7,7 @@
 			<h3>Localization</h3>
 			<label><input type="checkbox" name="translate" value="true"> Send on save</label>
 		</p>
+		<br>
 		<p>
 			<h3>Source store locale</h3>
 			<?php
@@ -35,7 +36,7 @@
 			<br>
 			
 		</p>
-		
+		<br>
 		<p>
 			<h3>Target store view(s)</h3>
 			<?php
@@ -68,33 +69,165 @@
 			}
 			?>
 		</p>
-		
+		<br>
 		<p>
-		<h3>Localization log</h3>
-			<ul class="messages">
-				<?php 
-				// Get and print log for this product
-				$resource = Mage::getSingleton('core/resource');
-				$readConnection = $resource->getConnection('core_read');
-				$statustable = Mage::getConfig()->getTablePrefix()."contentor_status";
-				$producttable = Mage::getConfig()->getTablePrefix()."contentor_products";
-				$query = "SELECT `" . $statustable . "`.`status_time`, `" . $statustable . "`.`status` FROM `" . $producttable . "` LEFT JOIN `" . $statustable . "` ON `" . $producttable . "`.`contentor_id`= `" . $statustable . "`.`contentor_id` WHERE `" . $producttable . "`.`sku` = :this_sku ORDER BY `" . $statustable . "`.`status_time`";
-				$binds = array('this_sku'=>$this_sku);
-				$messages = $readConnection->fetchAll($query, $binds);
+			<div class="entry-edit">
+				<div class="section-config">
+					<div class="entry-edit-head collapseable">
+						<a href="#" id="data_to_send-head" onclick="Fieldset.toggleCollapse('data_to_send', '<?php print Mage::helper('core/url')->getCurrentUrl(); ?>'); return false;">Data to send</a>
+					</div>
+					<input id="data_to_send-state" name="config_state_data_to_send" type="hidden" value="0">
+					<fieldset class="config collapseable" id="data_to_send">
+							<!--  Get my fields and print them nicely! -->
+							<?php
+							require_once(Mage::getModuleDir('', 'Contentor_LocalizationApi') . '/lib/api/ContentorAPI.php');
+							$fields = ContentorAPI::getFieldData(Mage::registry('current_product'), 'product');
+							foreach($fields as $field) {
+								if($field['id'] != 'auto_sku') {
+									print '<p><b>' . $field['name'] . '</b> ';
+									print '(<i>' . $field['type'] . '</i>)<br>';
+									print htmlspecialchars($field['value']) . '</p>';
+								}
+							}
+							?>
+					</fieldset>
+					<script type="text/javascript">
+						//<![CDATA[
+	        				Fieldset.applyCollapse('data_to_send');
+	        			//]]>
+            		</script>
+				</div>
+			</div>
+		</p>
+		<p>
+		<?php 
+		$contextName = Mage::getStoreConfig('contentor_context/contentor_context_data/contentor_context_products_contextname');
+		$contextValue = Mage::getStoreConfig('contentor_context/contentor_context_data/contentor_context_products_context');
+		if(!empty($contextValue)) {
+			$collapsed = 1;
+		} else {
+			$collapsed = 0;
+		}
+		?>
+			<div class="entry-edit">
+				<div class="section-config">
+					<div class="entry-edit-head collapseable">
+						<a href="#" id="context-head" onclick="Fieldset.toggleCollapse('context', '<?php print Mage::helper('core/url')->getCurrentUrl(); ?>'); return false;">Add extra content context</a>
+					</div>
+					<input id="context-state" name="config_state_context" type="hidden" value="<?php print $collapsed; ?>">
+					<fieldset class="config collapseable" id="context">
+						<b>Context name</b><br>
+						<input type="text" name="contextname" value="<?php print $contextName; ?>"><br><br>
+						<b>Context</b><br>
+						<textarea name="context" style="width:100%" rows=7 id="context-content"><?php 
+						print $contextValue;
+						?></textarea><br>
+						<i>Context from this field will be visible for the writers.</i>
+					</fieldset>
+					<script type="text/javascript">
+						//<![CDATA[
+	        				Fieldset.applyCollapse('context');
+	        			//]]>
+            		</script>
+				</div>
+			</div>
+		</p>
+		<br>
+		<p>
+			<h3>Request status</h3>
+			<?php 
+			// Get and print log for this product
+			$resource = Mage::getSingleton('core/resource');
+			$readConnection = $resource->getConnection('core_read');
+			$statustable = Mage::getConfig()->getTablePrefix()."contentor_status";
+			$producttable = Mage::getConfig()->getTablePrefix()."contentor_products";
+			$query = "SELECT `" . $producttable . "`.`contentor_id`, `" . $producttable . "`.`target_store`, `" . $producttable . "`.`sent_time`, `" . $producttable . "`.`completed_time`, `" . $producttable . "`.`canceled_time`, `" . $statustable . "`.`status_time`, `" . $statustable . "`.`status`, `" . $producttable . "`.`state`, `" . $producttable . "`.`type` FROM `" . $producttable . "` LEFT JOIN `" . $statustable . "` ON `" . $producttable . "`.`contentor_id`= `" . $statustable . "`.`contentor_id` WHERE `" . $producttable . "`.`sku` = :this_sku ORDER BY `" . $producttable . "`.`contentor_id` DESC, `" . $statustable . "`.`status_time`";
+			$binds = array('this_sku'=>$this_sku);
+			$messages = $readConnection->fetchAll($query, $binds);
+			$lastId = '';
+			if(count($messages)) {
+				// I have content
+				print '<ul class="messages">';
 				foreach($messages as $message) {
-					if(substr($message['status'], 0, 8) == 'Received') {
-						print '<li class="success-msg">';
-					} else {
-						print '<li class="notice-msg">';
-					}
+					if($message['contentor_id'] != $lastId) {
+
+						// If not for the first time ever print the end of prev.
+						if($lastId) {
+							print '</ul>';
+							print '</li>';
+						}
+						
+						// New request, print header and button if needed
+						if($message['state'] == 'canceled') {
+							// Product canceled
+							print '<li class="error-msg">';
+							print '<h4>Canceled</h4>';
+						} else if($message['state'] == 'confirmed') {
+							print '<li class="notice-msg">';
+							print '<h4 style="float:left">Confirmed</h4>';
+							print '<div class="form-buttons"><button onClick="fetchSingle(\'' . $message['contentor_id'] . '\',\'product\'); return false;">Look for updates</button></div>';
+							print '<div style="clear:both"></div>';
+							
+						} else if($message['state'] == 'completed' || $message['completed_time'] != null) {
+							// Product completed
+							print '<li class="success-msg">';
+							print '<h4>Completed ' . $message['completed_time'] . '</h4>';
+						} else {
+							print '<li class="notice-msg">';
+							print '<h4 style="float:left">Sent ' . $message['sent_time'] . '</h4>';
+							print '<div class="form-buttons"><button onClick="fetchSingle(\'' . $message['contentor_id'] . '\',\'product\'); return false;">Look for updates</button></div>';
+							print '<div style="clear:both"></div>';
+							
+						}
+						
+						print '<p>Target store: ' . Mage::getModel('core/store')->load($message['target_store'])->getName() . '<br>';
+						if(!empty($message['type'])) {
+							$type = $message['type'];
+						} else {
+							$type = 'standard';
+						}
+						print 'Request type: ' . $type . '</p>';
+
+						// Print the status rows
+						$lastId = $message['contentor_id'];
+						print '<hr>';
+						print '<p><h5>Log messages</h5>';
 						print '<ul>';
-							print '<li><i>' . $message['status_time'] . '</i></li>';
-							print '<li>' . $message['status'] . '</li>';
-						print '</ul>';
-					print '</li>';
+					}
+					
+					// This happens every iteration
+					print '<li><i>' . $message['status_time'] . '</i> - ' . $message['status'] . '</li>';
+					
 				}
-				?>
-			</ul>
+				print '</ul></p>';
+				print '</li>';
+				print '</ul>';
+			} else {
+				print "<i>(No events to show)</i>";
+			}
+			?>
 		</p>
 	</fieldset>
 </div>
+<script type="text/javascript">
+//<![CDATA[
+	function fetchSingle(id, type) {
+		new Ajax.Request('<?php echo Mage::helper('adminhtml')->getUrl('adminhtml/Contentor/fetchSingle') ?>', {
+			method:     'GET',
+			parameters: { id, type },
+			onSuccess: function(transport) {
+				if(transport.responseText) {
+				// If response was that changes was found, reload page if user wants to!
+					if(confirm('Changes was found, reload page?')) {
+							location.reload();
+					} else {
+						return false;
+					}
+				} else {
+					alert('No state changes was found');
+				}
+			}
+		});
+	}
+//]]>
+</script>

@@ -1,13 +1,14 @@
 <div class="content-header">
     <table cellspacing="0">
         <tr>
-            <td style="width:50%;"><h3 class="icon-head head-report">Contentor Product Localization Report</h3></td>
+            <td style="width:50%;"><h3 class="icon-head head-report">Contentor CMS Page Localization Report</h3></td>
             <td class="form-buttons"></td>
         </tr>
     </table>
 </div>
 
 <?php
+
 	if(isset($_GET['page'])) {	
 		$page = abs($_GET['page']);
 	} else {
@@ -21,10 +22,10 @@
 	
 	$resource = Mage::getSingleton('core/resource');
 	$readConnection = $resource->getConnection('core_read');
-	$table = Mage::getConfig()->getTablePrefix()."contentor_products";
+	$table = Mage::getConfig()->getTablePrefix()."contentor_cmspages";
 	
 	// Pagination $page and $pagesize
-	$qTot = "SELECT `sku` FROM `" . $table . "` GROUP BY `sku`, `source_locale`";
+	$qTot = "SELECT `page_id` FROM `" . $table . "` GROUP BY `page_id`, `source_locale`";
 	$rTot = $readConnection->query($qTot);
 	$tot = $rTot->rowCount();
 	if($tot > 0) {
@@ -39,28 +40,28 @@
 		if($i == $page) {
 			print '<b>' . $i . '</b> ';
 		} else {
-			print '<a href="' . Mage::helper('adminhtml')->getUrl('adminhtml/contentor/productsreport') . '?page=' . $i . '&pagesize=' . $pagesize . '">' . $i . '</a> ';
+			print '<a href="' . Mage::helper('adminhtml')->getUrl('adminhtml/contentor/cmspagesreport') . '?page=' . $i . '&pagesize=' . $pagesize . '">' . $i . '</a> ';
 		}
 	}
 	print ' | '; 
 	if($page > 1) {
-		print '<a href="' . Mage::helper('adminhtml')->getUrl('adminhtml/contentor/productsreport') . '?page=' . ($page-1) . '&pagesize=' . $pagesize . '">Previous</a> ';
+		print '<a href="' . Mage::helper('adminhtml')->getUrl('adminhtml/contentor/cmspagesreport') . '?page=' . ($page-1) . '&pagesize=' . $pagesize . '">Previous</a> ';
 	}
 	if($page < $nPages) {
-		print ' <a href="' . Mage::helper('adminhtml')->getUrl('adminhtml/contentor/productsreport') . '?page=' . ($page+1) . '&pagesize=' . $pagesize . '">Next</a> ';
+		print ' <a href="' . Mage::helper('adminhtml')->getUrl('adminhtml/contentor/cmspagesreport') . '?page=' . ($page+1) . '&pagesize=' . $pagesize . '">Next</a> ';
 	}
 	 
 	$offset = ($page-1)*$pagesize;
-	$query = "SELECT `sku`, 
+	$query = "SELECT `page_id`, 
 					GROUP_CONCAT(`target_store`, ';', `sent_time`) AS sent, 
 					GROUP_CONCAT(`target_store`, ';', `completed_time`) AS completed,
-					`source_locale` AS source, GROUP_CONCAT(`target_store`, ';', `state`) as state
+					`source_locale` AS source,  GROUP_CONCAT(`target_store`, ';', `state`) as state
 				FROM `" . $table . "` 
-				GROUP BY `sku`, `source_locale`  
+				GROUP BY `page_id`, `source_locale`  
 				ORDER BY `sent_time` DESC
 				LIMIT " . $offset . "," . $pagesize;
-	$productList = $readConnection->fetchAll($query);
-	$n = count($productList);
+	$cmspageList = $readConnection->fetchAll($query);
+	$n = count($cmspageList);
 
 	// Get stores
 	$stores = Mage::app()->getStores();
@@ -71,7 +72,7 @@
 		$storeLocale[$id] = $locale;
 	}
 	$numStores = count($storeInfo);
-?>
+	?>
 	<div class="grid">
 		<div class="hor-scroll">
 			<table cellspacing=0 class="actions">
@@ -86,7 +87,7 @@
 					?>
 				</colgroup>
 				<thead>
-					<tr class="headings"><th>SKU</th><th>Name</th><th>Source</th><th colspan=<?php print $numStores;?>>Status</th></tr>
+					<tr class="headings"><th>ID</th><th>Name</th><th>Source</th><th colspan=<?php print $numStores;?>>Status</th></tr>
 					<tr class="headings"><th></th><th></th><th></th>
 					<?php 
 						foreach($storeInfo as $id => $store) {
@@ -96,12 +97,12 @@
 					</tr>
 				</thead>
 				<tbody>
-<?php
+	<?php
 	$i = 0;
-	foreach($productList as $prod) {
-		$details = Mage::getModel('catalog/product')->loadByAttribute('sku',$prod['sku']);
-		$prodName = $details->getName();
-		$url = Mage::helper('adminhtml')->getUrl('adminhtml/catalog_product/edit', array('id' => $details->getId()));
+	foreach($cmspageList as $page) {
+		$details = Mage::getModel('cms/page')->load($page['page_id']);
+		$pageName = $details->getTitle();
+		$url = Mage::helper('adminhtml')->getUrl('adminhtml/cms_page/edit', array('page_id'=>$details->getId(), 'clear'=>1));
 		if($i%2) {
 			$even = 'even';
 		} else {
@@ -109,7 +110,7 @@
 		}
 		
 		$sent = array();
-		$sentStores = explode(",", $prod['sent']);
+		$sentStores = explode(",", $page['sent']);
 		foreach($sentStores as $sentStore) {
 			if(!empty($sentStore)) {
 				$sentinfo = explode(";",$sentStore);
@@ -118,7 +119,7 @@
 		}
 		
 		$completed = array();
-		$completeStores = explode(",", $prod['completed']);
+		$completeStores = explode(",", $page['completed']);
 		foreach($completeStores as $completeStore) {
 			if(!empty($completeStore)) {
 				$completeinfo = explode(";",$completeStore);
@@ -127,7 +128,7 @@
 		}
 		
 		$state = array();
-		$stateStores = explode(",", $prod['state']);
+		$stateStores = explode(",", $page['state']);
 		foreach($stateStores as $stateStore) {
 			if(!empty($stateStore)) {
 				$stateinfo = explode(";",$stateStore);
@@ -136,12 +137,11 @@
 		}
 		
 		print '<tr title="' . $url . '" class="' . $even . '">';
-		print '<td class=" "><a href="' . $url . '">' . $prod['sku'] . '</a></td>';
-		print '<td class=" ">' . $prodName . '</td>';
-		print '<td class=" ">' . $prod['source'] . '</td>';
+		print '<td class=" "><a href="' . $url . '">' . $page['page_id'] . '</a></td>';
+		print '<td class=" ">' . $pageName . '</td>';
+		print '<td class=" ">' . $page['source'] . '</td>';
 		// Loop stores and print status for them
 		foreach($storeInfo as $id => $name) {
-			// Check state
 			if(isset($state[$id])) {
 				// I have a state and I will use it!
 				if($state[$id] == 'completed') {

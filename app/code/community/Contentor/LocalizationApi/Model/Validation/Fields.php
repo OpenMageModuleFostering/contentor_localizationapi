@@ -4,7 +4,7 @@ class Contentor_LocalizationApi_Model_Validation_Fields extends Mage_Adminhtml_M
     protected function _beforeSave()
     {
    		$value = $this->getValue();
-   		$validfields = array('text', 'textarea');
+   		$validfields = array('text', 'textarea', 'gallery');
    		foreach($value as $field) {
    			print_r($field);
    			if(is_array($field)) {

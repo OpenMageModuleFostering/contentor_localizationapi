@@ -1,5 +1,5 @@
 <?php
-class Contentor_LocalizationApi_Block_Adminhtml_FieldDetails
+class Contentor_LocalizationApi_Block_Adminhtml_ProductFieldDetails
     extends Mage_Adminhtml_Block_System_Config_Form_Field_Array_Abstract
 {
 	protected $attributeList;

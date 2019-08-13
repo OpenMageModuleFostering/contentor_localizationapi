@@ -23,7 +23,7 @@ class Contentor_LocalizationApi_Model_ScheduleExport
 				foreach($products as $product) {
 					// Sent with defaultsource, and this as target
 					$sku = $product->getSku();
-					if($fields = ContentorAPI::getFieldData($product)) {
+					if($fields = ContentorAPI::getFieldData($product, 'product')) {
 	    				$request = ContentorAPI::createRequest($sourceLocale, $targetLocale, $fields);
 	    				if($contentorID = ContentorAPI::send($request)) {
 	    					$sent++;
