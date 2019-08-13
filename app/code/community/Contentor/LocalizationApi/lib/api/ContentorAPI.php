@@ -280,6 +280,7 @@ class ContentorAPI
 					// Set product enabled
 					$product->setStatus(1);
 				}
+				$product->setUrlKey(false);
 				$product->save();
 				// Write notice in Magento DB, set completed date in DB
 				$resource = Mage::getSingleton('core/resource');

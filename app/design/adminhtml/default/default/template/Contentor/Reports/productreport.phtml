@@ -41,15 +41,15 @@
 		if($i == $page) {
 			print '<b>' . $i . '</b> ';
 		} else {
-			print '<a href="' . Mage::helper('adminhtml')->getUrl('adminhtml/contentor/productreport') . '?page=' . $i . '&pagesize=' . $pagesize . '">' . $i . '</a> ';
+			print '<a href="' . Mage::helper('adminhtml')->getUrl('adminhtml/contentor/productsreport') . '?page=' . $i . '&pagesize=' . $pagesize . '">' . $i . '</a> ';
 		}
 	}
 	print ' | '; 
 	if($page > 1) {
-		print '<a href="' . Mage::helper('adminhtml')->getUrl('adminhtml/contentor/productreport') . '?page=' . ($page-1) . '&pagesize=' . $pagesize . '">Previous</a> ';
+		print '<a href="' . Mage::helper('adminhtml')->getUrl('adminhtml/contentor/productsreport') . '?page=' . ($page-1) . '&pagesize=' . $pagesize . '">Previous</a> ';
 	}
 	if($page < $nPages) {
-		print ' <a href="' . Mage::helper('adminhtml')->getUrl('adminhtml/contentor/productreport') . '?page=' . ($page+1) . '&pagesize=' . $pagesize . '">Next</a> ';
+		print ' <a href="' . Mage::helper('adminhtml')->getUrl('adminhtml/contentor/productsreport') . '?page=' . ($page+1) . '&pagesize=' . $pagesize . '">Next</a> ';
 	}
 	 
 	$offset = ($page-1)*$pagesize;
