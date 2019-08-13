@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+    <tabs>
+        <contentorconfig translate="label" module="Contentor_LocalizationApi">
+            <label>Contentor API</label>
+            <sort_order>99999999</sort_order>
+        </contentorconfig>
+    </tabs>
+    <sections>
+    
+	<contentor_options translate="label" module="Contentor_LocalizationApi">
+		<label>Contentor API Config Options</label>
+		<tab>contentorconfig</tab>
+		<sort_order>1000</sort_order>
+		<show_in_default>1</show_in_default>
+		<show_in_website>0</show_in_website>
+		<show_in_store>0</show_in_store>
+
+		<groups>
+			<contentor_token translate="label" module="Contentor_LocalizationApi">
+				<label>API Token</label>
+				<frontend_type>text</frontend_type>
+				<sort_order>10</sort_order>
+				<show_in_default>1</show_in_default>
+				<show_in_website>0</show_in_website>
+				<show_in_store>0</show_in_store>
+				<comment><![CDATA[Token can be found in Contentor Customer Portal: <a href="https://portal.contentor.com/" target="_blank">https://portal.contentor.com/</a>]]></comment>
+
+				<fields>
+					<contentor_token_input>
+						<label>Contentor Token: </label>
+						<comment>Your token from the Customer portal</comment>
+						<frontend_type>text</frontend_type>
+						<sort_order>10</sort_order>
+						<show_in_default>1</show_in_default>
+						<show_in_website>0</show_in_website>
+						<show_in_store>0</show_in_store>
+					</contentor_token_input>
+				</fields>
+			</contentor_token>
+			
+			<contentor_import translate="label" module="Contentor_LocalizationApi">
+				<label>API Import settings</label>
+				<frontend_type>text</frontend_type>
+				<sort_order>15</sort_order>
+				<show_in_default>1</show_in_default>
+				<show_in_website>0</show_in_website>
+				<show_in_store>0</show_in_store>
+
+				<fields>
+					<contentor_import_status>
+						<label>Import status: </label>
+						<comment>Product status on import. If enable, status will change to enabled. If disable status won't change.</comment>
+						<frontend_type>select</frontend_type>
+						<sort_order>10</sort_order>
+						<source_model>adminhtml/system_config_source_enabledisable</source_model>
+						<show_in_default>1</show_in_default>
+						<show_in_website>0</show_in_website>
+						<show_in_store>0</show_in_store>
+					</contentor_import_status>
+				</fields>
+			</contentor_import>
+
+			<contentor_targets translate="label" module="Contentor_LocalizationApi">
+				<label>API Target stores</label>
+				<frontend_type>text</frontend_type>
+				<sort_order>20</sort_order>
+				<show_in_default>1</show_in_default>
+				<show_in_website>0</show_in_website>
+				<show_in_store>0</show_in_store>
+
+				<fields>
+					<contentor_targets_input>
+						<label>Target stores: </label>
+						<comment>Default targets for localization, these can be changed per product later on</comment>
+						<frontend_type>multiselect</frontend_type>
+						<source_model>Contentor_LocalizationApi/system_config_source_multiselect_stores</source_model>
+						<sort_order>20</sort_order>
+						<show_in_default>1</show_in_default>
+						<show_in_website>0</show_in_website>
+						<show_in_store>0</show_in_store>
+					</contentor_targets_input>
+				</fields>
+			</contentor_targets>
+			
+			<contentor_fields translate="label" module="Contentor_LocalizationApi">
+				<label>API Included Fields</label>
+				<frontend_type>text</frontend_type>
+				<sort_order>30</sort_order>
+				<show_in_default>1</show_in_default>
+				<show_in_website>0</show_in_website>
+				<show_in_store>0</show_in_store>
+
+				<fields>
+					<contentor_localizable_input>
+						<label>Localizable Fields: </label>
+						<comment>Fields for localization</comment>
+						<frontend_type>multiselect</frontend_type>
+						<source_model>Contentor_LocalizationApi/system_config_source_multiselect_localizable</source_model>
+						<sort_order>10</sort_order>
+						<show_in_default>1</show_in_default>
+						<show_in_website>0</show_in_website>
+						<show_in_store>0</show_in_store>
+					</contentor_localizable_input>
+					
+					<contentor_context_input>
+						<label>Context Fields: </label>
+						<comment>Context fields, for example product link for writers to see images etc</comment>
+						<frontend_type>multiselect</frontend_type>
+						<source_model>Contentor_LocalizationApi/system_config_source_multiselect_context</source_model>
+						<sort_order>30</sort_order>
+						<show_in_default>1</show_in_default>
+						<show_in_website>0</show_in_website>
+						<show_in_store>0</show_in_store>
+						<can_be_empty>1</can_be_empty>
+					</contentor_context_input>
+					
+					<contentor_required_input>
+						<label>Required Fields: </label>
+						<comment>Required fields, throwes exception in empty on submit. Save changes to get fields added above.</comment>
+						<frontend_type>multiselect</frontend_type>
+						<source_model>Contentor_LocalizationApi/system_config_source_multiselect_required</source_model>
+						<sort_order>40</sort_order>
+						<show_in_default>1</show_in_default>
+						<show_in_website>0</show_in_website>
+						<show_in_store>0</show_in_store>
+						<can_be_empty>1</can_be_empty>
+					</contentor_required_input>
+				</fields>
+			</contentor_fields>
+		</groups>			
+	</contentor_options>
+</sections>
+</config>

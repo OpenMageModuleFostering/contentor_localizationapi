@@ -1,0 +1,120 @@
+<div class="content-header">
+    <table cellspacing="0">
+        <tr>
+            <td style="width:50%;"><h3 class="icon-head head-report">Contentor Localization Report</h3></td>
+            <td class="form-buttons"></td>
+        </tr>
+    </table>
+</div>
+
+<?php 
+	if(isset($_GET['page'])) {	
+		$page = abs($_GET['page']);
+	} else {
+		$page = 1;
+	}
+	if(isset($_GET['pagesize'])) {
+		$pagesize = abs($_GET['pagesize']);
+	} else {
+		$pagesize = 30;
+	}
+	
+	$offset = ($page-1)*$pagesize;
+	
+	$resource = Mage::getSingleton('core/resource');
+	$readConnection = $resource->getConnection('core_read');
+	$query = "SELECT `sku`, 
+					GROUP_CONCAT(`target_store`, ';', `sent_time`) AS sent, 
+					GROUP_CONCAT(`target_store`, ';', `completed_time`) AS completed 
+				FROM `contentor_products` 
+				GROUP BY `sku` 
+				ORDER BY `sent_time` DESC
+				LIMIT " . $offset . "," . $pagesize;
+	$productList = $readConnection->fetchAll($query);
+	
+	// Get stores
+	$stores = Mage::app()->getStores();
+	foreach($stores as $id => $info) {
+		$name = Mage::app()->getStore($id)->getName();
+		$storeInfo[$id] = $name;
+	}
+	$numStores = count($storeInfo);
+?>
+	<div class="grid">
+		<div class="hor-scroll">
+			<table cellspacing=0 class="actions">
+				<colgroup>
+					<col width="50" />
+					<col width="250" />
+					<col width="150" />
+					<col width="150" />
+					<col width="150" />
+				</colgroup>
+				<thead>
+					<tr class="headings"><th>SKU</th><th>Name</th><th colspan=<?php print $numStores;?>>Status</th></tr>
+					<tr class="headings"><th></th><th></th>
+					<?php 
+						foreach($storeInfo as $store) {
+							print '<th>' . $store . '</th>';
+						}
+					?>
+					</tr>
+				</thead>
+				<tbody>
+<?php
+	$i = 0;
+	foreach($productList as $prod) {
+		$details = Mage::getModel('catalog/product')->loadByAttribute('sku',$prod['sku']);
+		$prodName = $details->getName();
+		$url = Mage::helper('adminhtml')->getUrl('adminhtml/catalog_product/edit', array('id' => $details->getId()));
+		if($i%2) {
+			$even = 'even';
+		} else {
+			$even = '';
+		}
+		
+		$sent = array();
+		$sentStores = explode(",", $prod['sent']);
+		foreach($sentStores as $sentStore) {
+			if(!empty($sentStore)) {
+				$sentinfo = explode(";",$sentStore);
+				$sent[$sentinfo[0]] = $sentinfo[1];
+			}
+		}
+		
+		$completed = array();
+		$completeStores = explode(",", $prod['completed']);
+		foreach($completeStores as $completeStore) {
+			if(!empty($completeStore)) {
+				$completeinfo = explode(";",$completeStore);
+				$completed[$completeinfo[0]] = $completeinfo[1];
+			}
+		}
+		
+		print '<tr title="' . $url . '" class="' . $even . '">';
+		print '<td class=" "><a href="' . $url . '">' . $prod['sku'] . '</a></td>';
+		print '<td class=" ">' . $prodName . '</td>';
+		// Loop stores and print status for them
+		foreach($storeInfo as $id => $name) {
+			if(isset($completed[$id])) {
+				print '<td style="padding-left: 25px !important; background:#eff5ea url(/skin/adminhtml/default/default/images/success_msg_icon.gif) no-repeat 3px 3px !important;">';
+				print 'Received: ' . $completed[$id];
+			} elseif(isset($sent[$id]))	{
+				print '<td style="padding-left: 25px !important; background:#fffbf0 url(/skin/adminhtml/default/default/images/note_msg_icon.gif) no-repeat 3px 3px !important;">';
+				print 'Sent: ' . $sent[$id];
+			} else {
+				print '<td>';
+				print 'Not sent';
+			}
+			
+			print '</td>';
+		}
+		print '</tr>';
+		
+		$i++;
+	}
+?>
+				</tbody>
+			</table>
+		</div>
+	</div>

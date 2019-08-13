@@ -1,0 +1,80 @@
+<div class="entry-edit">
+	<div class="entry-edit-head">
+		<h4 class="icon-head head-edit-form fieldset-legend">Contentor Localization API</h4>
+	</div>
+    <fieldset id="Contentor">
+		<p>
+			<h3>Localizaton</h3>
+			<input type="checkbox" name="translate" value="true"> Send on save
+		</p>
+		<p>
+			<h3>Source store locale</h3>
+			<?php
+			$this_store_id = Mage::app()->getRequest()->getParam('store');
+			$this_store = str_replace('_', '-', Mage::getStoreConfig('general/locale/code', $this_store_id));
+			$this_sku  = Mage::registry('current_product')->getSku();
+			print $this_store;
+			?>
+			<input type="hidden" name="source" value="<?php print $this_store;?>"><br>
+			<small>Choose store view to change</small>
+		</p>
+		
+		<p>
+			<h3>Target store(s)</h3>
+			<?php
+			// Get stores if sent before
+			
+			// Else get default stores
+			$defaultstores = explode(',',Mage::getStoreConfig('contentor_options/contentor_targets/contentor_targets_input'));
+			
+			$storesStructure = Mage::getSingleton('adminhtml/system_store')->getStoresStructure();
+			foreach($storesStructure as $website) {
+				print "<b>";
+				print $website['label'];
+				print "</b><br>";
+				foreach($website['children'] as $store) {
+					print "&nbsp;&nbsp;&nbsp;<b><i>";
+					print $store['label'];
+					print "</i></b><br>";
+					foreach($store['children'] as $storeview) {
+						$id = $storeview['value'];
+						$name = $storeview['label'];
+						$locale = str_replace('_', '-', Mage::getStoreConfig('general/locale/code', $id));
+						if(in_array($id, $defaultstores)) {
+							$checked = 'checked';
+						} else {
+							$checked = '';
+						}
+						print '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="checkbox" name="targets[]" value="' . $id . '" id="store_' . $id . '" ' . $checked . '> ' . $name . ' (' . $locale .')<br>';
+					}
+				}
+			}
+			?>
+		</p>
+		
+		<p>
+		<h3>Localization log</h3>
+			<ul class="messages">
+				<?php 
+				// Get and print log for this product
+				$resource = Mage::getSingleton('core/resource');
+				$readConnection = $resource->getConnection('core_read');
+				$query = "SELECT `contentor_status`.`status_time`, `contentor_status`.`status` FROM `contentor_products` LEFT JOIN `contentor_status` ON `contentor_products`.`contentor_id`= `contentor_status`.`contentor_id` WHERE `contentor_products`.`sku` = '" . $this_sku . "' ORDER BY `contentor_status`.`status_time`";
+				$messages = $readConnection->fetchAll($query);
+				foreach($messages as $message) {
+					if(substr($message['status'], 0, 8) == 'Received') {
+						print '<li class="success-msg">';
+					} else {
+						print '<li class="notice-msg">';
+					}
+						print '<ul>';
+							print '<li><i>' . $message['status_time'] . '</i></li>';
+							print '<li>' . $message['status'] . '</li>';
+						print '</ul>';
+					print '</li>';
+				}
+				?>
+			</ul>
+		<p>
+	</fieldset>
+</div>

@@ -1,0 +1,8 @@
+<config>
+    <modules>
+        <Contentor_LocalizationApi>
+       		<active>true</active>
+			<codePool>community</codePool> 
+		</Contentor_LocalizationApi>
+    </modules>
+</config>

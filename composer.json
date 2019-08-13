@@ -1,0 +1,16 @@
+{
+    "name": "OpenMageModuleFostering/Contentor_LocalizationAPI",
+    "type": "magento-module",
+    "license": "OSL-v3.0",
+    "homepage": "",
+    "description": "Localisation Module for Contentor API",
+    "authors": [
+    {
+        "name": "Kim Hockum",
+        "email": "kim@contentor.se"
+    }
+],
+    "suggest": {
+        "magento-hackathon/magento-composer-installer": "*"
+    }
+}
