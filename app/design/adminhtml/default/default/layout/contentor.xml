@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<layout>
+	<adminhtml_catalog_product_edit>
+		<reference name="product_tabs">
+			<action method="addTab">
+ 				<name>Contentor Localization</name>
+				<block template="Contentor/Products/localizationtab.phtml">Contentor_LocalizationApi/adminhtml_tabs_products_localizationtab</block>
+			</action>
+		</reference>
+	</adminhtml_catalog_product_edit>
+</layout>

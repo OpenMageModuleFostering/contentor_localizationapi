@@ -1,0 +1,161 @@
+<div class="content-header">
+    <table cellspacing="0">
+        <tr>
+            <td style="width:50%;"><h3 class="icon-head head-report">Contentor Category Localization Report</h3></td>
+            <td class="form-buttons"></td>
+        </tr>
+    </table>
+</div>
+
+<?php
+	if(isset($_GET['page'])) {	
+		$page = abs($_GET['page']);
+	} else {
+		$page = 1;
+	}
+	if(isset($_GET['pagesize'])) {
+		$pagesize = abs($_GET['pagesize']);
+	} else {
+		$pagesize = 30;
+	}
+	
+	
+	
+	$resource = Mage::getSingleton('core/resource');
+	$readConnection = $resource->getConnection('core_read');
+	$table = Mage::getConfig()->getTablePrefix()."contentor_categories";
+	
+	// Pagination $page and $pagesize
+	$qTot = "SELECT `cat_id` FROM `" . $table . "` GROUP BY `cat_id`, `source_locale`";
+	$rTot = $readConnection->query($qTot);
+	$tot = $rTot->rowCount();
+	if($tot > 0) {
+		
+	$nPages = ceil($tot/$pagesize);
+	if($page > $nPages) {
+		$page = $nPages;
+	}
+	print 'Total ' . $tot . ' rows<br>';
+	print 'Page: ';
+	for($i=1;$i<=$nPages;$i++) {
+		if($i == $page) {
+			print '<b>' . $i . '</b> ';
+		} else {
+			print '<a href="' . Mage::helper('adminhtml')->getUrl('adminhtml/contentor/categoryreports') . '?page=' . $i . '&pagesize=' . $pagesize . '">' . $i . '</a> ';
+		}
+	}
+	print ' | '; 
+	if($page > 1) {
+		print '<a href="' . Mage::helper('adminhtml')->getUrl('adminhtml/contentor/categoryreports') . '?page=' . ($page-1) . '&pagesize=' . $pagesize . '">Previous</a> ';
+	}
+	if($page < $nPages) {
+		print ' <a href="' . Mage::helper('adminhtml')->getUrl('adminhtml/contentor/categoryreports') . '?page=' . ($page+1) . '&pagesize=' . $pagesize . '">Next</a> ';
+	}
+	 
+	$offset = ($page-1)*$pagesize;
+	$query = "SELECT `cat_id`, 
+					GROUP_CONCAT(`target_store`, ';', `sent_time`) AS sent, 
+					GROUP_CONCAT(`target_store`, ';', `completed_time`) AS completed,
+					`source_locale` AS source
+				FROM `" . $table . "` 
+				GROUP BY `cat_id`, `source_locale`  
+				ORDER BY `sent_time` DESC
+				LIMIT " . $offset . "," . $pagesize;
+	$categoryList = $readConnection->fetchAll($query);
+	$n = count($productList);
+		
+	// Get stores
+	$stores = Mage::app()->getStores();
+	foreach($stores as $id => $info) {
+		$name = Mage::app()->getStore($id)->getName();
+		$locale = str_replace('_', '-', Mage::getStoreConfig('general/locale/code', $id));
+		$storeInfo[$id] = $name;
+		$storeLocale[$id] = $locale;
+	}
+	$numStores = count($storeInfo);
+?>
+	<div class="grid">
+		<div class="hor-scroll">
+			<table cellspacing=0 class="actions">
+				<colgroup>
+					<col width="50" />
+					<col width="250" />
+					<col width="50" />
+					<?php
+						foreach($storeInfo as $store) {
+							print '<col width="150" />';
+						}
+					?>
+				</colgroup>
+				<thead>
+					<tr class="headings"><th>ID</th><th>Name</th><th>Source</th><th colspan=<?php print $numStores;?>>Status</th></tr>
+					<tr class="headings"><th></th><th></th><th></th>
+					<?php 
+						foreach($storeInfo as $id => $store) {
+							print '<th>' . $store . ' (' . $storeLocale[$id] . ')</th>';
+						}
+					?>
+					</tr>
+				</thead>
+				<tbody>
+<?php
+	$i = 0;
+	foreach($categoryList as $cat) {
+		$details = Mage::getModel('catalog/category')->load($cat['cat_id']);
+		$catName = $details->getName();
+		$url = Mage::helper('adminhtml')->getUrl('adminhtml/catalog_category/index', array('id'=>$details->getId(), 'clear'=>1));
+		if($i%2) {
+			$even = 'even';
+		} else {
+			$even = '';
+		}
+		
+		$sent = array();
+		$sentStores = explode(",", $cat['sent']);
+		foreach($sentStores as $sentStore) {
+			if(!empty($sentStore)) {
+				$sentinfo = explode(";",$sentStore);
+				$sent[$sentinfo[0]] = $sentinfo[1];
+			}
+		}
+		
+		$completed = array();
+		$completeStores = explode(",", $cat['completed']);
+		foreach($completeStores as $completeStore) {
+			if(!empty($completeStore)) {
+				$completeinfo = explode(";",$completeStore);
+				$completed[$completeinfo[0]] = $completeinfo[1];
+			}
+		}
+		
+		print '<tr title="' . $url . '" class="' . $even . '">';
+		print '<td class=" "><a href="' . $url . '">' . $cat['cat_id'] . '</a></td>';
+		print '<td class=" ">' . $catName . '</td>';
+		print '<td class=" ">' . $cat['source'] . '</td>';
+		// Loop stores and print status for them
+		foreach($storeInfo as $id => $name) {
+			if(isset($completed[$id])) {
+				print '<td style="padding-left: 25px !important; background:#eff5ea url(/skin/adminhtml/default/default/images/success_msg_icon.gif) no-repeat 3px 3px !important;">';
+				print 'Received: ' . $completed[$id];
+			} elseif(isset($sent[$id]))	{
+				print '<td style="padding-left: 25px !important; background:#fffbf0 url(/skin/adminhtml/default/default/images/note_msg_icon.gif) no-repeat 3px 3px !important;">';
+				print 'Sent: ' . $sent[$id];
+			} else {
+				print '<td>';
+				print 'Not sent';
+			}
+			
+			print '</td>';
+		}
+		print '</tr>';
+		
+		$i++;
+	}
+?>
+				</tbody>
+			</table>
+		</div>
+	</div>
+<?php 
+	}
+?>

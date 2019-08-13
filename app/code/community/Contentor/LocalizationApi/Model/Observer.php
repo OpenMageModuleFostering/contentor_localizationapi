@@ -9,75 +9,144 @@ class Contentor_LocalizationApi_Model_Observer
     public function sendToLocalization(Varien_Event_Observer $observer)
     {
     	$translate = $this->_getRequest()->getPost('translate');
+    	// Check attribute flag if send instead of checkbox for seamless send when scripting in products
     	if($translate) {
     		// Do send to translation
     		
     		// Get source and target
-	    	$source = $this->_getRequest()->getPost('source');
-	    	$targets = $this->_getRequest()->getPost('targets');
+	    	$sourceLocale =  str_replace('_', '-', $this->_getRequest()->getPost('source'));
+	    	$targetIDs = $this->_getRequest()->getPost('targets');
+	    	foreach($targetIDs as $targetID) {
+	    		$targets[$targetID] = str_replace('_', '-', Mage::getStoreConfig('general/locale/code', $targetID));
+	    	}
+	    	$product = $observer->getEvent()->getProduct();
+	    	$sku = $product->getSku();
 	    	
 	    	// Check if source in targets?
 	    	if(!count($targets)) {
 	    		Mage::throwException(Mage::helper('adminhtml')->__('No data sent!<br>No target selected'));
-    		} elseif(in_array($source, $targets)) {
+    		} elseif(in_array($sourceLocale, $targets)) {
 	    		Mage::throwException(Mage::helper('adminhtml')->__('No data sent!<br>Source language in targets'));
 	    	} else {
-				// Get all data, based on settings
-	    		$product = $observer->getEvent()->getProduct();
-	    		$sku = $product->getSku();
-				
-	    		$fieldlist['localizable'] = explode(',',Mage::getStoreConfig('contentor_options/contentor_fields/contentor_localizable_input'));
-	    		$fieldlist['context'] = explode(',',Mage::getStoreConfig('contentor_options/contentor_fields/contentor_context_input'));
-	    		$requiredFields = explode(',',Mage::getStoreConfig('contentor_options/contentor_fields/contentor_required_input'));
-
-	    		$message = array();
-	    		foreach($targets as $targetid) {
-	    			$data[$targetid]['language']['source'] = $source;
-	    			$target = str_replace('_', '-', Mage::getStoreConfig('general/locale/code', $targetid));
-	    			$data[$targetid]['language']['target'] = $target;
-	    			// Add SKU as internal field
-	    			$data[$targetid]['fields'][] = array('id' => 'sku',
-		    											 'type' => 'internal',
-		    											 'data' => 'string',
-		    											 'value' => $sku);
-	    			
-		    		foreach($fieldlist as $fieldtype => $fields) {
-		    			foreach($fields as $field) {
-		    				$func = 'get' . $field;
-		    				$value = $product->$func();
-		    				if(!empty($value)) {
-			    				$data[$targetid]['fields'][] = array('id' => $field,
-			    												 'type' => $fieldtype,
-			    												 'data' => 'html:relaxed',
-			    												 'value' => $value);
-		    				}
-		    				
-		    				// Do some check if empty, localizable fields not empty?
-		    				if(in_array($field, $requiredFields) && empty($value)) {
-		    					$message[] = 'Required field [' . $field . '] empty.';
-		    				}
-		    			}
-		    		}
+	    		require_once(Mage::getModuleDir('', 'Contentor_LocalizationApi') . '/lib/api/ContentorAPI.php');
+	    		// Get fields
+	    		if($fields = ContentorAPI::getFieldData($product)) {
+	    			// Then Loop targets and send
+	    			foreach($targets as $targetID => $targetLocale) {
+	    				$request = ContentorAPI::createRequest($sourceLocale, $targetLocale, $fields);
+	    				if($contentorID = ContentorAPI::send($request)) {
+	    					if(!ContentorAPI::logSent($contentorID, $sku, $sourceLocale, $targetLocale, $targetID, $product)) {
+	    						return false;
+	    					}
+	    				} else {
+	    					return false;
+	    				}
+	    			}
+	    		} else {
+	    			return false;
 	    		}
-		        if(count($message)) {
-		        	// If data missing, throw exception
-		        	$message = implode('<br>', $message);
-		        	Mage::throwException(Mage::helper('adminhtml')->__('No data sent!<br>' . $message));
-
-		        } else {
-		        	// Everyting OK? Do your magic here!
-		        	require_once(Mage::getModuleDir('', 'Contentor_LocalizationApi') . '/lib/api/ContentorAPI.php');
-		        	$result = ContentorAPI::sendToLocalization($sku,$data);
-		        	if($result !== true) {
-		        		Mage::throwException(Mage::helper('adminhtml')->__($result));
-		        	} else {
-		        		return true;
-		        	}
-		        }
 	    	}
     	} else {
     		// No translation to be sent, just move along.
     		return true;
     	}
+    }
+    
+    public function categorySendToLocalization(Varien_Event_Observer $observer)
+    {
+    	$translate = $this->_getRequest()->getPost('translate');
+    	// Check attribute flag if send instead of checkbox for seamless send when scripting in products
+    	if($translate) {
+    		// Get source and target
+    		$sourceLocale =  str_replace('_', '-', $this->_getRequest()->getPost('source'));
+    		$targetIDs = $this->_getRequest()->getPost('targets');
+    		foreach($targetIDs as $targetID) {
+    			$targets[$targetID] = str_replace('_', '-', Mage::getStoreConfig('general/locale/code', $targetID));
+    		}
+    		
+    		$category = $observer->getEvent()->getCategory();
+    		$categoryID = $category->getId();
+    		require_once(Mage::getModuleDir('', 'Contentor_LocalizationApi') . '/lib/api/ContentorAPI.php');
+    		// OK, lets go!
+    		
+    		// Check if source in targets?
+	    	if(!count($targets)) {
+	    		Mage::throwException(Mage::helper('adminhtml')->__('No data sent!<br>No target selected'));
+    		} elseif(in_array($sourceLocale, $targets)) {
+	    		Mage::throwException(Mage::helper('adminhtml')->__('No data sent!<br>Source language in targets'));
+	    	} else {
+	    		require_once(Mage::getModuleDir('', 'Contentor_LocalizationApi') . '/lib/api/ContentorAPI.php');
+	    		// Get fields
+	    		if($fields = ContentorAPI::getFieldData($category, true)) {
+	    			// Then Loop targets and send
+	    			foreach($targets as $targetID => $targetLocale) {
+	    				$request = ContentorAPI::createRequest($sourceLocale, $targetLocale, $fields);
+	    				if($contentorID = ContentorAPI::send($request)) {
+	    					if(!ContentorAPI::logSentCategory($contentorID, $categoryID, $sourceLocale, $targetLocale, $targetID)) {
+	    						return false;
+	    					}
+	    				} else {
+	    					return false;
+	    				}
+	    			}
+	    		} else {
+	    			return false;
+	    		}
+	    	}
+    	} else {
+    		// No translation to be sent, just move along.
+    		return true;
+    	}
+    }
+    
+    public function multiSendToLocalization(Varien_Event_Observer $observer)
+    {
+    	$block = $observer->getEvent()->getBlock();
+    	$block->getMassactionBlock()->addItem('sendbulk', array(
+    			'label'=> Mage::helper('catalog')->__('Send for Localization'),
+    			'url'  => $block->getUrl('adminhtml/contentor/sendbulk')
+    	));
+    }
+    
+    public function addCustomCategoryTab(Varien_Event_Observer $observer)
+    {
+    	/** @var Mage_Adminhtml_Block_Catalog_Category_Tabs $tabsBlock */
+    	$tabsBlock = $observer->getTabs();
+    
+    	if (!$tabsBlock) {
+    		return;
+    	}
+    
+    	/** @var Mage_Catalog_Model_Category $category */
+    	$category = Mage::registry('current_category');
+
+    	/**
+    	 * Conditional code if you do not want to display custom tab
+    	 * for root level categories.
+    	 */
+    	if (!$category || $category->getLevel() < 2) {
+    		return;
+    	}
+    
+    	/** @var ArchApps_CustomTabs_Helper_Data $helper */
+    	$helper = Mage::helper('Contentor_LocalizationApi');
+    
+    	$tabsBlock->addTab('contentor_category_localization', array(
+    			'label' => $helper->__('Contentor Localization'),
+    			'content' => $tabsBlock->getLayout()->createBlock(
+    					'Contentor_LocalizationApi/adminhtml_tabs_categories_localizationtab',
+    					'contentor_category_localization.category.tab'
+    					)->toHtml(),
+    	));
+    	
+		/*
+    	$tabsBlock->addTab('contentor_category_content_creation', array(
+    			'label' => $helper->__('Contentor Content Creation'),
+    			'content' => $tabsBlock->getLayout()->createBlock(
+    					'Contentor_LocalizationApi/adminhtml_tabs_categories_contentcreationtab',
+    					'contentor_category_content_creation.category.tab'
+    					)->toHtml(),
+    	));
+		*/
     }
 }

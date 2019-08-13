@@ -1,13 +1,13 @@
 {
     "name": "OpenMageModuleFostering/Contentor_LocalizationAPI",
     "type": "magento-module",
-    "license": "OSL-v3.0",
+    "license": "OSL",
     "homepage": "",
-    "description": "Localisation Module for Contentor API",
+    "description": "Send and receive localizations via Contentor API.",
     "authors": [
     {
-        "name": "Kim Hockum",
-        "email": "kim@contentor.se"
+        "name": "Contentor",
+        "email": "dev@contentor.se"
     }
 ],
     "suggest": {

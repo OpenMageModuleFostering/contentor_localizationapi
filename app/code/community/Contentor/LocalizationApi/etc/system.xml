@@ -29,7 +29,7 @@
 				<fields>
 					<contentor_token_input>
 						<label>Contentor Token: </label>
-						<comment>Your token from the Customer portal</comment>
+						<comment>Your token from the Customer portal.</comment>
 						<frontend_type>text</frontend_type>
 						<sort_order>10</sort_order>
 						<show_in_default>1</show_in_default>
@@ -39,7 +39,7 @@
 					
 					<contentor_token_check translate="label">
 						<label>Check Token: </label>
-						<comment>Save Config with Token before check</comment>
+						<comment>Save Config with Token before check.</comment>
                 		<frontend_type>button</frontend_type>
                 		<frontend_model>Contentor_LocalizationApi/adminhtml_button</frontend_model>
                 		<sort_order>20</sort_order>
@@ -50,8 +50,8 @@
 				</fields>
 			</contentor_token>
 			
-			<contentor_import translate="label" module="Contentor_LocalizationApi">
-				<label>API Import settings</label>
+			<contentor_automation translate="label" module="Contentor_LocalizationApi">
+				<label>API Automation Settings</label>
 				<frontend_type>text</frontend_type>
 				<sort_order>15</sort_order>
 				<show_in_default>1</show_in_default>
@@ -61,7 +61,7 @@
 				<fields>
 					<contentor_import_status>
 						<label>Import status: </label>
-						<comment>Product status on import. If enable, status will change to enabled. If disable status won't change.</comment>
+						<comment>Product status on import. If enable, status will change to enabled. If disable status won't change. Note that status is set on Website, so product will be enbaled on all store views on that Website.</comment>
 						<frontend_type>select</frontend_type>
 						<sort_order>10</sort_order>
 						<source_model>adminhtml/system_config_source_enabledisable</source_model>
@@ -69,11 +69,44 @@
 						<show_in_website>0</show_in_website>
 						<show_in_store>0</show_in_store>
 					</contentor_import_status>
+					
+					<contentor_autoexport>
+						<label>Autoexport: </label>
+						<comment>Enable to automatically send product with attribute contentor_localize_me.</comment>
+						<frontend_type>select</frontend_type>
+						<sort_order>20</sort_order>
+						<source_model>adminhtml/system_config_source_enabledisable</source_model>
+						<show_in_default>1</show_in_default>
+						<show_in_website>0</show_in_website>
+						<show_in_store>0</show_in_store>
+					</contentor_autoexport>
 				</fields>
-			</contentor_import>
+			</contentor_automation>
+
+			<contentor_source translate="label" module="Contentor_LocalizationApi">
+				<label>API Source Language</label>
+				<frontend_type>text</frontend_type>
+				<sort_order>18</sort_order>
+				<show_in_default>1</show_in_default>
+				<show_in_website>0</show_in_website>
+				<show_in_store>0</show_in_store>
+
+				<fields>
+					<contentor_source_input>
+						<label>Source language: </label>
+						<comment>Default source for localization, these can be changed per product later on.</comment>
+						<frontend_type>select</frontend_type>
+						<source_model>Contentor_LocalizationApi/system_config_source_multiselect_languages</source_model>
+						<sort_order>20</sort_order>
+						<show_in_default>1</show_in_default>
+						<show_in_website>0</show_in_website>
+						<show_in_store>0</show_in_store>
+					</contentor_source_input>
+				</fields>
+			</contentor_source>
 
 			<contentor_targets translate="label" module="Contentor_LocalizationApi">
-				<label>API Target stores</label>
+				<label>API Target Store Views</label>
 				<frontend_type>text</frontend_type>
 				<sort_order>20</sort_order>
 				<show_in_default>1</show_in_default>
@@ -82,8 +115,8 @@
 
 				<fields>
 					<contentor_targets_input>
-						<label>Target stores: </label>
-						<comment>Default targets for localization, these can be changed per product later on</comment>
+						<label>Target store views: </label>
+						<comment>Default targets for localization, these can be changed per product later on.</comment>
 						<frontend_type>multiselect</frontend_type>
 						<source_model>Contentor_LocalizationApi/system_config_source_multiselect_stores</source_model>
 						<sort_order>20</sort_order>
@@ -103,42 +136,30 @@
 				<show_in_store>0</show_in_store>
 
 				<fields>
-					<contentor_localizable_input>
-						<label>Localizable Fields: </label>
-						<comment>Fields for localization</comment>
-						<frontend_type>multiselect</frontend_type>
-						<source_model>Contentor_LocalizationApi/system_config_source_multiselect_localizable</source_model>
-						<sort_order>10</sort_order>
-						<show_in_default>1</show_in_default>
-						<show_in_website>0</show_in_website>
-						<show_in_store>0</show_in_store>
-					</contentor_localizable_input>
-					
-					<contentor_context_input>
-						<label>Context Fields: </label>
-						<comment>Context fields, for example product link for writers to see images etc</comment>
-						<frontend_type>multiselect</frontend_type>
-						<source_model>Contentor_LocalizationApi/system_config_source_multiselect_context</source_model>
-						<sort_order>30</sort_order>
-						<show_in_default>1</show_in_default>
-						<show_in_website>0</show_in_website>
-						<show_in_store>0</show_in_store>
-						<can_be_empty>1</can_be_empty>
-					</contentor_context_input>
-					
-					<contentor_required_input>
-						<label>Required Fields: </label>
-						<comment>Required fields, throwes exception in empty on submit. Save changes to get fields added above.</comment>
-						<frontend_type>multiselect</frontend_type>
-						<source_model>Contentor_LocalizationApi/system_config_source_multiselect_required</source_model>
-						<sort_order>40</sort_order>
-						<show_in_default>1</show_in_default>
-						<show_in_website>0</show_in_website>
-						<show_in_store>0</show_in_store>
-						<can_be_empty>1</can_be_empty>
-					</contentor_required_input>
+					<contentor_fields_input translate="label">
+  						<label>Included fields for product localization:</label>
+						<comment>Note than only attribute types text or textarea are valid as localizable fields. Also the fields will appeare in this order for the writer.</comment>
+    					<frontend_model>Contentor_LocalizationApi/adminhtml_fieldDetails</frontend_model>
+    					<backend_model>Contentor_LocalizationApi/validation_fields</backend_model>
+    					<sort_order>8</sort_order>
+    					<show_in_default>1</show_in_default>
+    					<show_in_website>0</show_in_website>
+    					<show_in_store>0</show_in_store>
+					</contentor_fields_input>
+
+					<contentor_category_fields_input translate="label">
+  						<label>Included fields for category localization:</label>
+						<comment>Note than only attribute types text or textarea are valid as localizable fields. Also the fields will appeare in this order for the writer.</comment>
+    					<frontend_model>Contentor_LocalizationApi/adminhtml_categoryFieldDetails</frontend_model>
+    					<backend_model>Contentor_LocalizationApi/validation_fields</backend_model>
+    					<sort_order>16</sort_order>
+    					<show_in_default>1</show_in_default>
+    					<show_in_website>0</show_in_website>
+    					<show_in_store>0</show_in_store>
+					</contentor_category_fields_input>
 				</fields>
 			</contentor_fields>
+			
 		</groups>			
 	</contentor_options>
 </sections>

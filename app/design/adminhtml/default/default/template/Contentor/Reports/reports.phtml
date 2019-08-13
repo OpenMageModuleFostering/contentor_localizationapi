@@ -1,0 +1,17 @@
+<div class="content-header">
+    <table cellspacing="0">
+        <tr>
+            <td style="width:50%;"><h3 class="icon-head head-report">Contentor Localization Reports</h3></td>
+            <td class="form-buttons"></td>
+        </tr>
+    </table>
+</div>
+<div class="grid">
+<?php 
+$produrl = Mage::helper('adminhtml')->getUrl('adminhtml/contentor/productsreport');
+$caturl = Mage::helper('adminhtml')->getUrl('adminhtml/contentor/categoriesreport');
+?>
+<a href="<?php print $produrl; ?>">Products</a><br>
+<a href="<?php print $caturl; ?>">Categories</a>
+
+</div>

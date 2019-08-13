@@ -4,23 +4,40 @@
 	</div>
     <fieldset id="Contentor">
 		<p>
-			<h3>Localizaton</h3>
-			<input type="checkbox" name="translate" value="true"> Send on save
+			<h3>Localization</h3>
+			<label><input type="checkbox" name="translate" value="true"> Send on save</label>
 		</p>
 		<p>
 			<h3>Source store locale</h3>
 			<?php
-			$this_store_id = Mage::app()->getRequest()->getParam('store');
-			$this_store = str_replace('_', '-', Mage::getStoreConfig('general/locale/code', $this_store_id));
+			// Get default locale from settings
+			$defaultSource = Mage::getStoreConfig('contentor_options/contentor_source/contentor_source_input');
+			$thisStoreId = Mage::app()->getRequest()->getParam('store');
+			if(!$defaultSource) {
+				$defaultSource = Mage::getStoreConfig('general/locale/code', $thisStoreId);
+			}
 			$this_sku  = Mage::registry('current_product')->getSku();
-			print $this_store;
+			// Get, and list all available locales
+			$allLanguages = Mage::app()->getLocale()->getOptionLocales();
 			?>
-			<input type="hidden" name="source" value="<?php print $this_store;?>"><br>
-			<small>Choose store view to change</small>
+			<select name="source">
+				<option value="">Choose source language</option>
+				<?php 
+					foreach($allLanguages as $lang) {
+						print '<option value="' . $lang['value'] . '"';
+						if($lang['value'] == $defaultSource) {
+							print ' SELECTED';
+						}
+						print '>' . $lang['label'] . '</option>';
+					}
+				?>
+			</select>
+			<br>
+			
 		</p>
 		
 		<p>
-			<h3>Target store(s)</h3>
+			<h3>Target store view(s)</h3>
 			<?php
 			// Get stores if sent before
 			
@@ -45,7 +62,7 @@
 						} else {
 							$checked = '';
 						}
-						print '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="checkbox" name="targets[]" value="' . $id . '" id="store_' . $id . '" ' . $checked . '> ' . $name . ' (' . $locale .')<br>';
+						print '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<label><input type="checkbox" name="targets[]" value="' . $id . '" id="store_' . $id . '" ' . $checked . '> ' . $name . ' (' . $locale .')</label><br>';
 					}
 				}
 			}
@@ -61,8 +78,9 @@
 				$readConnection = $resource->getConnection('core_read');
 				$statustable = Mage::getConfig()->getTablePrefix()."contentor_status";
 				$producttable = Mage::getConfig()->getTablePrefix()."contentor_products";
-				$query = "SELECT `" . $statustable . "`.`status_time`, `" . $statustable . "`.`status` FROM `" . $producttable . "` LEFT JOIN `" . $statustable . "` ON `" . $producttable . "`.`contentor_id`= `" . $statustable . "`.`contentor_id` WHERE `" . $producttable . "`.`sku` = '" . $this_sku . "' ORDER BY `" . $statustable . "`.`status_time`";
-				$messages = $readConnection->fetchAll($query);
+				$query = "SELECT `" . $statustable . "`.`status_time`, `" . $statustable . "`.`status` FROM `" . $producttable . "` LEFT JOIN `" . $statustable . "` ON `" . $producttable . "`.`contentor_id`= `" . $statustable . "`.`contentor_id` WHERE `" . $producttable . "`.`sku` = :this_sku ORDER BY `" . $statustable . "`.`status_time`";
+				$binds = array('this_sku'=>$this_sku);
+				$messages = $readConnection->fetchAll($query, $binds);
 				foreach($messages as $message) {
 					if(substr($message['status'], 0, 8) == 'Received') {
 						print '<li class="success-msg">';
@@ -77,6 +95,6 @@
 				}
 				?>
 			</ul>
-		<p>
+		</p>
 	</fieldset>
 </div>

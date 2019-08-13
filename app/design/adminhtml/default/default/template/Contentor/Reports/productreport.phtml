@@ -1,13 +1,13 @@
 <div class="content-header">
     <table cellspacing="0">
         <tr>
-            <td style="width:50%;"><h3 class="icon-head head-report">Contentor Localization Report</h3></td>
+            <td style="width:50%;"><h3 class="icon-head head-report">Contentor Product Localization Report</h3></td>
             <td class="form-buttons"></td>
         </tr>
     </table>
 </div>
 
-<?php 
+<?php
 	if(isset($_GET['page'])) {	
 		$page = abs($_GET['page']);
 	} else {
@@ -19,25 +19,58 @@
 		$pagesize = 30;
 	}
 	
-	$offset = ($page-1)*$pagesize;
+	
 	
 	$resource = Mage::getSingleton('core/resource');
 	$readConnection = $resource->getConnection('core_read');
 	$table = Mage::getConfig()->getTablePrefix()."contentor_products";
+	
+	// Pagination $page and $pagesize
+	$qTot = "SELECT `sku` FROM `" . $table . "` GROUP BY `sku`, `source_locale`";
+	$rTot = $readConnection->query($qTot);
+	$tot = $rTot->rowCount();
+	if($tot > 0) {
+		
+	$nPages = ceil($tot/$pagesize);
+	if($page > $nPages) {
+		$page = $nPages;
+	}
+	print 'Total ' . $tot . ' rows<br>';
+	print 'Page: ';
+	for($i=1;$i<=$nPages;$i++) {
+		if($i == $page) {
+			print '<b>' . $i . '</b> ';
+		} else {
+			print '<a href="' . Mage::helper('adminhtml')->getUrl('adminhtml/contentor/productreport') . '?page=' . $i . '&pagesize=' . $pagesize . '">' . $i . '</a> ';
+		}
+	}
+	print ' | '; 
+	if($page > 1) {
+		print '<a href="' . Mage::helper('adminhtml')->getUrl('adminhtml/contentor/productreport') . '?page=' . ($page-1) . '&pagesize=' . $pagesize . '">Previous</a> ';
+	}
+	if($page < $nPages) {
+		print ' <a href="' . Mage::helper('adminhtml')->getUrl('adminhtml/contentor/productreport') . '?page=' . ($page+1) . '&pagesize=' . $pagesize . '">Next</a> ';
+	}
+	 
+	$offset = ($page-1)*$pagesize;
 	$query = "SELECT `sku`, 
 					GROUP_CONCAT(`target_store`, ';', `sent_time`) AS sent, 
-					GROUP_CONCAT(`target_store`, ';', `completed_time`) AS completed 
+					GROUP_CONCAT(`target_store`, ';', `completed_time`) AS completed,
+					`source_locale` AS source
 				FROM `" . $table . "` 
-				GROUP BY `sku` 
+				GROUP BY `sku`, `source_locale`  
 				ORDER BY `sent_time` DESC
 				LIMIT " . $offset . "," . $pagesize;
 	$productList = $readConnection->fetchAll($query);
-	
+	$n = count($productList);
+		
 	// Get stores
 	$stores = Mage::app()->getStores();
 	foreach($stores as $id => $info) {
 		$name = Mage::app()->getStore($id)->getName();
+		$locale = str_replace('_', '-', Mage::getStoreConfig('general/locale/code', $id));
 		$storeInfo[$id] = $name;
+		$storeLocale[$id] = $locale;
 	}
 	$numStores = count($storeInfo);
 ?>
@@ -47,16 +80,19 @@
 				<colgroup>
 					<col width="50" />
 					<col width="250" />
-					<col width="150" />
-					<col width="150" />
-					<col width="150" />
+					<col width="50" />
+					<?php
+						foreach($storeInfo as $store) {
+							print '<col width="150" />';
+						}
+					?>
 				</colgroup>
 				<thead>
-					<tr class="headings"><th>SKU</th><th>Name</th><th colspan=<?php print $numStores;?>>Status</th></tr>
-					<tr class="headings"><th></th><th></th>
+					<tr class="headings"><th>SKU</th><th>Name</th><th>Source</th><th colspan=<?php print $numStores;?>>Status</th></tr>
+					<tr class="headings"><th></th><th></th><th></th>
 					<?php 
-						foreach($storeInfo as $store) {
-							print '<th>' . $store . '</th>';
+						foreach($storeInfo as $id => $store) {
+							print '<th>' . $store . ' (' . $storeLocale[$id] . ')</th>';
 						}
 					?>
 					</tr>
@@ -95,6 +131,7 @@
 		print '<tr title="' . $url . '" class="' . $even . '">';
 		print '<td class=" "><a href="' . $url . '">' . $prod['sku'] . '</a></td>';
 		print '<td class=" ">' . $prodName . '</td>';
+		print '<td class=" ">' . $prod['source'] . '</td>';
 		// Loop stores and print status for them
 		foreach($storeInfo as $id => $name) {
 			if(isset($completed[$id])) {
@@ -119,3 +156,6 @@
 			</table>
 		</div>
 	</div>
+<?php 
+	}
+?>

@@ -1,0 +1,138 @@
+<?php 
+
+// If settings set then loop products and target(s) to send like on single product page
+$data = Mage::app()->getRequest()->getPost();
+$url = Mage::helper('adminhtml')->getUrl('adminhtml/Contentor/postbulk')
+?>
+
+<script type="text/javascript">
+    //<![CDATA[
+    function doSend(formular) {
+        console.log('1');
+    	if(!document.getElementsByName("theend").value) {
+			const products = formular.products.value;
+			const source = formular.source.value;
+			const total = formular.total.value;
+			let targets;
+			if(formular.targets.type == 'select-multiple') {
+				targets = new Array;
+				for(x=0;x<formular.targets.length;x++) {
+					if(formular.targets[x].selected) {
+						targets.push(formular.targets[x].value);
+					}
+				}
+				targets = targets.join(',');
+			} else {
+				targets = formular.targets.value;
+			}
+			new Ajax.Request('<?php echo $url ?>', {
+	            method:     'POST',
+	            parameters:	{ products: products, source: source, targets: targets, total: total },
+	            onSuccess:  function(transport) {
+		            if(transport.responseText) {
+		                document.getElementById('resultdiv').innerHTML = transport.responseText;
+		                doSend(document.getElementById('progressform'));
+		            }
+	            }
+	        });
+    	}
+    }
+    //]]>
+</script>
+
+<div class="entry-edit">
+    <div class="content-header">
+    	<form method="post" action="<?php print $this->getUrl('adminhtml/contentor/sendbulk');?>" id="productform">
+    	<input type="hidden" name="form_key" value="<?php print $this->getFormKey(); ?>">
+    	<input type="hidden" name="total" value=0>
+		<table cellspacing="0">
+		    <tr>
+		        <td style="width:50%;"><h3 class="icon-head head-products">Contentor Product Localization Bulk Handeling</h3></td>
+		        <td class="a-right">
+		            <button title="Send for Localization" type="button" class="scalable submit" onClick="doSend(document.getElementById('productform'));" id="sendbutton"><span><span><span>Send for Localization</span></span></span></button>
+		        </td>
+		    </tr>
+		</table>
+	</div>
+	
+	<div>
+		<fieldset>	
+		<p>
+		<?php 
+		if(isset($data['product'])) {
+			$products = $data['product'];
+			$n = count($products);
+			$prodList = implode(',', $products);
+			print 'Submiting this form will send <b>' . $n . '</b> products';
+			print '<input type="hidden" name="products" value="' . $prodList . '" id="prodlist">';
+		} else {
+			print "Error, no data set";
+		}
+		?>
+		</p>
+		<p>
+			<h3>Source locale</h3>
+			<?php
+			
+			// Get default locale from settings
+			$defaultSource = Mage::getStoreConfig('contentor_options/contentor_source/contentor_source_input');
+			$thisStoreId = Mage::app()->getRequest()->getParam('store');
+			if(!$defaultSource) {
+				$defaultSource = Mage::getStoreConfig('general/locale/code', $thisStoreId);
+			}
+			// Get, and list all available locales
+			$allLanguages = Mage::app()->getLocale()->getOptionLocales();
+			?>
+			<select name="source">
+				<option value="">Choose source language</option>
+				<?php 
+					foreach($allLanguages as $lang) {
+						print '<option value="' . $lang['value'] . '"';
+						if($lang['value'] == $defaultSource) {
+							print ' SELECTED';
+						}
+						print '>' . $lang['label'] . '</option>';
+					}
+				?>
+			</select>
+			<br>
+		</p>
+				
+		<p>
+			<h3>Target store(s)</h3>
+			<?php
+			// Get stores if sent before
+			
+			// Else get default stores
+			$defaultstores = explode(',',Mage::getStoreConfig('contentor_options/contentor_targets/contentor_targets_input'));
+			
+			$storesStructure = Mage::getSingleton('adminhtml/system_store')->getStoresStructure();
+			print '<select name="targets" class="select multiselect" size="10" multiple="multiple">';
+			foreach($storesStructure as $website) {
+				print '<optgroup label="' . $website['label'] . '"></optgroup>';
+				foreach($website['children'] as $store) {
+					print '<optgroup label="    ' . $store['label'] . '"></optgroup>';
+					foreach($store['children'] as $storeview) {
+						$id = $storeview['value'];
+						$name = $storeview['label'];
+						$locale = str_replace('_', '-', Mage::getStoreConfig('general/locale/code', $id));
+						if(in_array($id, $defaultstores)) {
+							$checked = 'selected="selected"';
+						} else {
+							$checked = '';
+						}
+						print '<option value="' . $id . '" ' . $checked . '>     ' . $name . ' (' . $locale .')</option>';
+					}
+				}
+			}
+			print "</select>";
+			?>
+		</p>
+		
+		</form>
+
+		<div id="resultdiv"></div>
+		</fieldset>
+	</div>	
+	
+</div>

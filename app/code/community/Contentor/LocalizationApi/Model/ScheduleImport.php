@@ -12,12 +12,12 @@ class Contentor_LocalizationApi_Model_ScheduleImport
 		$query = "SELECT MAX(`completed_time`) FROM `" . $table . "`";
 		$newest = $readConnection->fetchOne($query);
 		
-		// Fix the date the ugly way!
-		if($newest <= '2016-07-06') {
-			$newest = date('Y-m-d\TH:i:s.u\Z', strtotime('2016-07-13'));
-		} else {
-			$newest = date('Y-m-d\TH:i:s.u\Z', strtotime($newest));
-		}
+		// Fix the date!
+	    if($newest) {
+    		$newest = date('Y-m-d\TH:i:s.u\Z', strtotime($newest));
+    	} else {
+    		$newest = date('Y-m-d\TH:i:s.u\Z', 0);
+    	}
 
 		// Go curl new completions since last time
 		// Everyting OK? Do your magic here!

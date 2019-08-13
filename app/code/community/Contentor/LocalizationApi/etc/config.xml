@@ -2,7 +2,7 @@
 <config> 
     <modules>
         <Contentor_LocalizationApi>
-            <version>1.1.0</version>
+            <version>1.2.0</version>
         </Contentor_LocalizationApi>
     </modules>
 
@@ -11,24 +11,46 @@
 			<Contentor_LocalizationApi>
 				<class>Contentor_LocalizationApi_Block</class>
 			</Contentor_LocalizationApi>
-			
-			<adminhtml>
-				<rewrite>
-					<catalog_product_edit_tabs>Contentor_LocalizationApi_Block_Adminhtml_Tabs</catalog_product_edit_tabs>
-				</rewrite>
-			</adminhtml>
 		</blocks>
 		
 		<events>
-            <catalog_product_save_before>
+            <catalog_product_save_after>
                 <observers>
                     <contentor_localizationapi>
-                        <class>Contentor_LocalizationApi/observer</class>
+                        <class>Contentor_LocalizationApi/Observer</class>
                         <method>sendToLocalization</method>
                         <type>singleton</type>
                     </contentor_localizationapi>
                 </observers>
-            </catalog_product_save_before>
+            </catalog_product_save_after>
+            
+            <catalog_category_save_after>
+                <observers>
+                    <contentor_localizationapi>
+                        <class>Contentor_LocalizationApi/Observer</class>
+                        <method>categorySendToLocalization</method>
+                        <type>singleton</type>
+                    </contentor_localizationapi>
+                </observers>
+            </catalog_category_save_after>
+            
+            <adminhtml_catalog_product_grid_prepare_massaction>
+                <observers>
+                    <contentor_localizationapi>
+                        <class>Contentor_LocalizationApi/observer</class>
+                        <method>multiSendToLocalization</method>
+                    </contentor_localizationapi>
+                </observers>
+            </adminhtml_catalog_product_grid_prepare_massaction>
+            <adminhtml_catalog_category_tabs>
+                <observers>
+                    <Contentor_LocalizationApi>
+                        <type>singleton</type>
+                        <method>addCustomCategoryTab</method>
+                        <class>Contentor_LocalizationApi/observer</class>
+                    </Contentor_LocalizationApi>
+                </observers>
+            </adminhtml_catalog_category_tabs>
         </events>
         
 		<models>
@@ -74,8 +96,12 @@
 							</children>
 						</system>
 						<reports>
-                    		<title>Contentor Reports</title>
-                        	<sort_order>10</sort_order>
+							<children>
+								<contentor_reports>
+                    				<title>Contentor Reports</title>
+                        			<sort_order>10</sort_order>
+                        		</contentor_reports>
+                        	</children>
                     	</reports>
 					</children>
 				</admin>
@@ -88,11 +114,31 @@
          			<contentor_reports translate="title" module="reports">
          				<title>Contentor Localization</title>
          				<sort_order>99999</sort_order>
-         				<action>adminhtml/contentor/reports</action>
+         				<action>adminhtml/contentor/reports</action>    
+						<children>
+         					<contentor_prod_reports translate="title" module="reports">
+		         				<title>Product Localization</title>
+         						<sort_order>10</sort_order>         						
+         						<action>adminhtml/contentor/productsreport</action>	
+         					</contentor_prod_reports>
+         					<contentor_cat_reports translate="title" module="reports">
+		         				<title>Category Localization</title>
+         						<sort_order>20</sort_order>         						
+         						<action>adminhtml/contentor/categoriesreport</action>         					
+         					</contentor_cat_reports>
+         				</children>
          			</contentor_reports>
          		</children>
       		</report>
     	</menu>
+    	
+		<layout>
+        	<updates>
+            	<Contentor_LocalizationApi>
+                	<file>contentor.xml</file>
+            	</Contentor_LocalizationApi>
+        	</updates>
+    	</layout>
        
 	</adminhtml>
 	
@@ -112,12 +158,21 @@
         <jobs>
             <ContentorScheduleImport>
                 <schedule>
-                	<cron_expr>*/15 * * * *</cron_expr>
+                	<cron_expr>*/5 * * * *</cron_expr>
                 </schedule>
                 <run>
                 	<model>Contentor_LocalizationApi/ScheduleImport::importCompleted</model>
                 </run>
             </ContentorScheduleImport>
+            
+            <ContentorScheduleExport>
+                <schedule>
+                	<cron_expr>*/5 * * * *</cron_expr>
+                </schedule>
+                <run>
+                	<model>Contentor_LocalizationApi/ScheduleExport::exportFlaggedProducts</model>
+                </run>
+            </ContentorScheduleExport>
         </jobs>
     </crontab>
     
