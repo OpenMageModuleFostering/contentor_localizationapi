@@ -525,7 +525,7 @@ class ContentorAPI
 			case 'category':
 				$tableName = "contentor_categories";
 				break;
-			case 'category':
+			case 'cmspage':
 				$tableName = "contentor_cmspages";
 				break;
 		}
