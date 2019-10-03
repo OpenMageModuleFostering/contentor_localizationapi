@@ -1,16 +1,19 @@
 {
-    "name": "OpenMageModuleFostering/Contentor_LocalizationAPI",
+    "name": "OpenMageModuleFostering\/Contentor_LocalizationAPI",
     "type": "magento-module",
     "license": "OSL",
     "homepage": "",
     "description": "Send and receive localizations via Contentor API.",
     "authors": [
-    {
-        "name": "Contentor",
-        "email": "dev@contentor.se"
-    }
-],
+        {
+            "name": "Contentor",
+            "email": "dev@contentor.se"
+        }
+    ],
     "suggest": {
-        "magento-hackathon/magento-composer-installer": "*"
-    }
+        "magento-hackathon\/magento-composer-installer": "*"
+    },
+    "keywords": [
+        "openmage-module"
+    ]
 }
